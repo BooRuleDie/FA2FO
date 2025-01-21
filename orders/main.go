@@ -6,10 +6,11 @@ import (
 	"net"
 	"time"
 
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/BooRuleDie/Microservice-in-Go/common"
+	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
+	_ "github.com/joho/godotenv/autoload"
 	"google.golang.org/grpc"
 )
 
@@ -17,6 +18,11 @@ var (
 	consulAddr  string = common.EnvString("CONSUL_ADDR", "localhost:8500")
 	grpcAddr    string = common.EnvString("GRPC_ADDR", "localhost:3000")
 	serviceName string = "orders"
+	amqpUser    string = common.EnvString("AMQP_USER", "guest")
+	amqpPass    string = common.EnvString("AMQP_PASS", "guest")
+	amqpHost    string = common.EnvString("AMQP_HOST", "localhost")
+	amqpPort    string = common.EnvString("AMQP_PORT", "5672")
+
 )
 
 func main() {
@@ -39,6 +45,14 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
+	// message broker setup
+	ch, close := broker.Connect(amqpUser, amqpPass, amqpHost, amqpPort)
+	defer func(){
+		close()
+		ch.Close()
+	}()
+
+
 	// create the grpc server
 	grpcServer := grpc.NewServer()
 	l, err := net.Listen("tcp", grpcAddr)
@@ -49,7 +63,7 @@ func main() {
 
 	store := NewStore()
 	service := NewService(store)
-	NewGrpcHandler(grpcServer, service)
+	NewGrpcHandler(grpcServer, service, ch)
 
 	service.CreateOrder(context.Background())
 

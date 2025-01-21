@@ -3,9 +3,15 @@ module github.com/BooRuleDie/Microservice-in-Go/common
 go 1.23.4
 
 require (
+	github.com/hashicorp/consul/api v1.31.0
+	github.com/rabbitmq/amqp091-go v1.10.0
+	google.golang.org/grpc v1.69.4
+	google.golang.org/protobuf v1.35.1
+)
+
+require (
 	github.com/armon/go-metrics v0.4.1 // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/hashicorp/consul/api v1.31.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-hclog v1.5.0 // indirect
@@ -23,6 +29,4 @@ require (
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241015192408-796eee8c2d53 // indirect
-	google.golang.org/grpc v1.69.4 // indirect
-	google.golang.org/protobuf v1.35.1 // indirect
 )
