@@ -5,16 +5,17 @@ import (
 
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
+	"github.com/BooRuleDie/Microservice-in-Go/gateway/gateway"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type handler struct {
-	client pb.OrderServiceClient
+	gateway gateway.OrdersGateway
 }
 
-func NewHandler(client pb.OrderServiceClient) *handler {
-	return &handler{client: client}
+func NewHandler(gateway gateway.OrdersGateway) *handler {
+	return &handler{gateway: gateway}
 }
 
 func (h *handler) registerRoutes(mux *http.ServeMux) {
@@ -35,9 +36,9 @@ func (h *handler) HandleCreateOrder(rw http.ResponseWriter, r *http.Request) {
 		return // don't continue executing rest of the code if it's an error
 	}
 
-	o, err := h.client.CreateOrder(r.Context(), &pb.CreateOrderRequest{
+	o, err := h.gateway.CreateOrder(r.Context(), &pb.CreateOrderRequest{
 		CustomerID: customerID,
-		Items:      items,
+		Items: items,
 	})
 	// we shouldn't write the grpc server's error directly if we want a
 	// consistent error format in the response as grpc package manipulates the
