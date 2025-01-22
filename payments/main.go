@@ -5,13 +5,15 @@ import (
 	"log"
 	"net"
 	"time"
-
+	
+	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
 	_ "github.com/joho/godotenv/autoload"
 	"google.golang.org/grpc"
+	"github.com/stripe/stripe-go/v81"
 )
 
 var (
@@ -22,7 +24,7 @@ var (
 	amqpPass    string = common.EnvString("AMQP_PASS", "guest")
 	amqpHost    string = common.EnvString("AMQP_HOST", "localhost")
 	amqpPort    string = common.EnvString("AMQP_PORT", "5672")
-
+	stripeKey   string = common.EnvString("STRIPE_KEY", "")
 )
 
 func main() {
@@ -45,15 +47,19 @@ func main() {
 	}()
 	defer registry.Deregister(ctx, instanceID, serviceName)
 
+	// setup stripe
+	stripe.Key = stripeKey
+
 	// message broker setup
 	ch, close := broker.Connect(amqpUser, amqpPass, amqpHost, amqpPort)
-	defer func(){
+	defer func() {
 		close()
 		ch.Close()
 	}()
 
 	// start message broker listener
-	srv := NewService()
+	processor := stripeProcesser.NewStripe()
+	srv := NewService(processor)
 	consumer := NewConsumer(srv)
 	go consumer.Listen(ch)
 

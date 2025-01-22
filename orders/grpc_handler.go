@@ -24,14 +24,9 @@ func NewGrpcHandler(grpcServer *grpc.Server, orderService OrderService, channel 
 }
 
 func (gh *grpcHandler) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest) (*pb.Order, error) {
-	err := gh.service.ValidateItems(ctx, p)
+	o, err := gh.service.CreateOrder(ctx, p)
 	if err != nil {
 		return nil, err
-	}
-
-	log.Printf("Order received! Order: %v", p)
-	o := &pb.Order{
-		ID: "42",
 	}
 
 	marshalledOrder, err := json.Marshal(o)
