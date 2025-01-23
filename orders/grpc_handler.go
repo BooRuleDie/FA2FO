@@ -23,8 +23,22 @@ func NewGrpcHandler(grpcServer *grpc.Server, orderService OrderService, channel 
 	pb.RegisterOrderServiceServer(grpcServer, handler)
 }
 
+func (gh *grpcHandler) GetOrder(ctx context.Context, p *pb.GetOrderRequest) (*pb.Order, error) {
+	o, err := gh.service.GetOrder(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+
+	return o, nil
+}
+
 func (gh *grpcHandler) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest) (*pb.Order, error) {
-	o, err := gh.service.CreateOrder(ctx, p)
+	items, err := gh.service.ValidateItems(ctx, p)
+	if err != nil {
+		return nil, err
+	}
+
+	o, err := gh.service.CreateOrder(ctx, p, items)
 	if err != nil {
 		return nil, err
 	}

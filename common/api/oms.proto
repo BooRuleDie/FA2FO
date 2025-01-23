@@ -6,6 +6,7 @@ package api;
 
 service OrderService {
     rpc CreateOrder(CreateOrderRequest) returns (Order);
+    rpc GetOrder(GetOrderRequest) returns (Order);
 }
 
 message ItemsWithQuantity {
@@ -16,6 +17,11 @@ message ItemsWithQuantity {
 message CreateOrderRequest {
     string customerID = 1; // it's string becuase MongoDB's document ids' will be used
     repeated ItemsWithQuantity Items = 2;
+}
+
+message GetOrderRequest {
+    string customerID = 1;
+    string orderID = 2;
 }
 
 message Items {
