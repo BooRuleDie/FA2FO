@@ -4,27 +4,30 @@ import (
 	"context"
 	"log"
 	"net"
+	"net/http"
 	"time"
-	
-	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
+
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
+	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
 	_ "github.com/joho/godotenv/autoload"
-	"google.golang.org/grpc"
 	"github.com/stripe/stripe-go/v81"
+	"google.golang.org/grpc"
 )
 
 var (
-	consulAddr  string = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	grpcAddr    string = common.EnvString("GRPC_ADDR", "localhost:3002")
-	serviceName string = "payment"
-	amqpUser    string = common.EnvString("AMQP_USER", "guest")
-	amqpPass    string = common.EnvString("AMQP_PASS", "guest")
-	amqpHost    string = common.EnvString("AMQP_HOST", "localhost")
-	amqpPort    string = common.EnvString("AMQP_PORT", "5672")
-	stripeKey   string = common.EnvString("STRIPE_KEY", "")
+	consulAddr           string = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	grpcAddr             string = common.EnvString("GRPC_ADDR", "localhost:3002")
+	serviceName          string = "payment"
+	amqpUser             string = common.EnvString("AMQP_USER", "guest")
+	amqpPass             string = common.EnvString("AMQP_PASS", "guest")
+	amqpHost             string = common.EnvString("AMQP_HOST", "localhost")
+	amqpPort             string = common.EnvString("AMQP_PORT", "5672")
+	stripeKey            string = common.EnvString("STRIPE_KEY", "")
+	httpAddr             string = common.EnvString("HTTP_ADDR", "localhost:8082")
+	endpointStripeSecret string = common.EnvString("ENDPOINT_STRIPE_SECRET", "")
 )
 
 func main() {
@@ -62,6 +65,18 @@ func main() {
 	srv := NewService(processor)
 	consumer := NewConsumer(srv)
 	go consumer.Listen(ch)
+
+	// set up the http server for webhook
+	mux := http.NewServeMux()
+	httpServer := NewPaymentHTTPHandler(ch)
+	httpServer.registerRoutes(mux)
+
+	go func() {
+		log.Printf("starting http server at %v", httpAddr)
+		if err := http.ListenAndServe(httpAddr, mux); err != nil {
+			log.Fatalf("failed to start payment http server. err: %v", err)
+		}
+	}()
 
 	// create the grpc server
 	grpcServer := grpc.NewServer()
