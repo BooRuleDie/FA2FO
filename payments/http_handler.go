@@ -1,13 +1,17 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"time"
 
+	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
+	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/webhook"
@@ -36,7 +40,7 @@ func (p *PaymentHTTPHandler) handleCheckoutWebhook(w http.ResponseWriter, req *h
 		return
 	}
 
-	fmt.Printf("Got body: %s", body)
+	// fmt.Printf("Got body: %s", body)
 
 	// Pass the request body and Stripe-Signature header to ConstructEvent, along with the webhook signing key
 	// Use the secret provided by Stripe CLI for local testing
@@ -61,8 +65,28 @@ func (p *PaymentHTTPHandler) handleCheckoutWebhook(w http.ResponseWriter, req *h
 
 		if cs.PaymentStatus == stripe.CheckoutSessionPaymentStatusPaid {
 			log.Printf("payment for checkout session %v succeeded!", cs.ID)
-		}
 
+			ctx, cancel := context.WithTimeout(req.Context(), 5*time.Second)
+			defer cancel()
+
+			// marshal the order for fanout
+			o := &pb.Order{
+				ID: cs.Metadata["orderID"],
+				CustomerID: cs.Metadata["customerID"],
+				Status:      "paid",
+				PaymentLink: "",
+			}
+			marshalledOrder, _ := json.Marshal(o)
+
+			// publish the message
+			p.channel.PublishWithContext(ctx, broker.OrderPaidEvent, "", false, false, amqp.Publishing{
+				ContentType:  "application/json",
+				Body:         marshalledOrder,
+				DeliveryMode: amqp.Persistent,
+			})
+
+			log.Println("Message published order.paid")
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)

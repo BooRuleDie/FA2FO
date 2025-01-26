@@ -37,10 +37,20 @@ func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, ite
 		Items: items,
 		Status: "pending",
 		CustomerID: p.CustomerID,
+		PaymentLink: "",
 	}
 
 	return o, nil
 }
+
+func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, error) {
+	err := s.store.Update(ctx, o.ID, o)
+	if err != nil {
+		return nil, err
+	}
+	return o, nil
+}
+
 
 func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Items, error) {
 	for _, i := range p.Items {

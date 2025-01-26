@@ -128,22 +128,22 @@
             );
 
             const data = await response.json();
-            if (data.Status === "waiting_payment") {
+            if (data.status === "waiting_payment") {
                 order.Status = "Your order is waiting for payment...";
                 document.getElementById("orderStatus").innerText = order.Status;
 
                 // show payment popup
                 document.querySelector(".payment-popup").style.display =
                     "block";
-                document.getElementById("payment-link").href = data.PaymentLink;
+                document.getElementById("payment-link").href = data.paymentLink;
             }
-            if (data.Status === "paid") {
+            if (data.status === "paid") {
                 order.Status =
                     "Your order has been paid for. Please way while its being prepared...";
                 document.getElementById("orderStatus").innerText = order.Status;
 
                 setTimeout(poolOrderStatus, 5000);
-            } else if (data.Status === "ready") {
+            } else if (data.status === "ready") {
                 order.Status = "ready";
 
                 // close payment popup

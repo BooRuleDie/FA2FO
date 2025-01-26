@@ -10,6 +10,7 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
+	"github.com/BooRuleDie/Microservice-in-Go/payments/gateway"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
 	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
 	_ "github.com/joho/godotenv/autoload"
@@ -62,7 +63,8 @@ func main() {
 
 	// start message broker listener
 	processor := stripeProcesser.NewStripe()
-	srv := NewService(processor)
+	gateway := gateway.NewGateway(registry)
+	srv := NewService(processor, gateway)
 	consumer := NewConsumer(srv)
 	go consumer.Listen(ch)
 

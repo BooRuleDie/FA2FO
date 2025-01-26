@@ -24,6 +24,7 @@ func (s *store) Create(ctx context.Context, p *pb.CreateOrderRequest, items []*p
 		CustomerID: p.CustomerID,
 		Status:     "pending",
 		Items:      items,
+		PaymentLink: "",
 	}
 	inmemStore = append(inmemStore, order)
 	// fmt.Println("inmemStore: ", inmemStore)
@@ -41,4 +42,17 @@ func (s *store) Get(ctx context.Context, p *pb.GetOrderRequest) (*pb.Order, erro
 	// fmt.Println("inmemStore: ", inmemStore)
 
 	return nil, errors.New("order not found")
+}
+
+func (s *store) Update(ctx context.Context, ID string, newOrder *pb.Order) error {
+	for i, order := range inmemStore {
+		if ID == order.ID {
+			inmemStore[i].Status = newOrder.Status
+			inmemStore[i].PaymentLink = newOrder.PaymentLink
+
+			return nil
+		}		
+	}
+
+	return nil
 }

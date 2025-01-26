@@ -34,12 +34,12 @@ func Connect(user, pass, host, port string) (*amqp.Channel, func() error) {
 	}
 
 	err = ch.ExchangeDeclare(
-		OrderCreatedPaid, 
-		"fanout", 
+		OrderPaidEvent,
+		"fanout",
 		true,
-		false, 
-		false, 
-		false, 
+		false,
+		false,
+		false,
 		nil,
 	)
 	if err != nil {

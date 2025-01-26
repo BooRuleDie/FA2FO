@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/BooRuleDie/Microservice-in-Go/common"
@@ -85,7 +86,13 @@ func (h *handler) handleCreateOrder(rw http.ResponseWriter, r *http.Request) {
 		return // don't continue executing rest of the code if it's an error
 	}
 
-	common.WriteJSON(rw, http.StatusCreated, o)
+	redirectUrl := fmt.Sprintf("http://localhost%s/success.html?customerID=%s&orderID=%s", httpAddr, o.CustomerID, o.ID)
+	cor := &CreateOrderRequest{
+		Order: o,
+		RedirectToUrl: redirectUrl,
+	}
+
+	common.WriteJSON(rw, http.StatusCreated, cor)
 }
 
 func validateItems(items []*pb.ItemsWithQuantity) error {

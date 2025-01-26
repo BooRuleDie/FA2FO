@@ -10,9 +10,11 @@ type OrderService interface {
 	CreateOrder(context.Context, *pb.CreateOrderRequest, []*pb.Items) (*pb.Order, error)
 	ValidateItems(context.Context, *pb.CreateOrderRequest) ([]*pb.Items, error)
 	GetOrder(context.Context, *pb.GetOrderRequest) (*pb.Order, error)
+	UpdateOrder(context.Context, *pb.Order) (*pb.Order, error)
 }
 
 type OrderStore interface {
 	Create(context.Context, *pb.CreateOrderRequest, []*pb.Items) (string, error)
 	Get(context.Context, *pb.GetOrderRequest) (*pb.Order, error)
+	Update(ctx context.Context, ID string, o *pb.Order) error
 }

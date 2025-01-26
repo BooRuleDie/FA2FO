@@ -11,7 +11,7 @@ import (
 
 var (
 	gatewaySuccessUrl string = common.EnvString("GATEWAY_PAYMENT_SUCCESS", "http://localhost:8081/success.html?customerID=%s&orderID=%s")
-	gatewayCancelUrl string = common.EnvString("GATEWAY_PAYMENT_CANCEL", "http://localhost:8081/cancel.html")
+	gatewayCancelUrl  string = common.EnvString("GATEWAY_PAYMENT_CANCEL", "http://localhost:8081/cancel.html")
 )
 
 type Stripe struct {
@@ -31,13 +31,17 @@ func (s *Stripe) CreatePaymentLink(o *pb.Order) (string, error) {
 		})
 	}
 
-	gatewaySuccessUrl = fmt.Sprintf(gatewaySuccessUrl, o.CustomerID, o.ID) 
+	gatewaySuccessUrl = fmt.Sprintf(gatewaySuccessUrl, o.CustomerID, o.ID)
 
 	params := &stripe.CheckoutSessionParams{
-		LineItems: items,
+		Metadata: map[string]string{
+			"customerID": o.CustomerID,
+			"orderID":    o.ID,
+		},
+		LineItems:  items,
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
 		SuccessURL: stripe.String(gatewaySuccessUrl),
-		CancelURL: stripe.String(gatewayCancelUrl),
+		CancelURL:  stripe.String(gatewayCancelUrl),
 	}
 	result, err := session.New(params)
 	if err != nil {
