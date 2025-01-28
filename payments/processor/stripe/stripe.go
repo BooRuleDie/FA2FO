@@ -31,7 +31,7 @@ func (s *Stripe) CreatePaymentLink(o *pb.Order) (string, error) {
 		})
 	}
 
-	gatewaySuccessUrl = fmt.Sprintf(gatewaySuccessUrl, o.CustomerID, o.ID)
+	successURL := fmt.Sprintf(gatewaySuccessUrl, o.CustomerID, o.ID)
 
 	params := &stripe.CheckoutSessionParams{
 		Metadata: map[string]string{
@@ -40,7 +40,7 @@ func (s *Stripe) CreatePaymentLink(o *pb.Order) (string, error) {
 		},
 		LineItems:  items,
 		Mode:       stripe.String(string(stripe.CheckoutSessionModePayment)),
-		SuccessURL: stripe.String(gatewaySuccessUrl),
+		SuccessURL: stripe.String(successURL),
 		CancelURL:  stripe.String(gatewayCancelUrl),
 	}
 	result, err := session.New(params)
