@@ -11,22 +11,27 @@ import (
 )
 
 type consumer struct {
-	service PaymentService
+	service OrderService
 }
 
-func NewConsumer(service PaymentService) *consumer {
+func NewConsumer(service OrderService) *consumer {
 	return &consumer{service: service}
 }
 
 func (c *consumer) Listen(ch *amqp.Channel) {
 	// declare the queue
-	q, err := ch.QueueDeclare(broker.OrderCreatedEvent, true, false, false, false, nil)
+	q, err := ch.QueueDeclare("", true, false, true, false, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = ch.QueueBind(q.Name, "", broker.OrderPaidEvent, false, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// autoAck -> false
-	msgChan, err := ch.Consume(q.Name, "", false, false, false, false, nil)
+	msgChan, err := ch.Consume(q.Name, "", true, false, false, false, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -45,24 +50,22 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				continue
 			}
 
-			paymentLink, err := c.service.CreatePayment(
+			_, err := c.service.UpdateOrder(
 				context.Background(),
 				o,
 			)
-			if err == nil {
-				log.Printf("failed to create payment: %v", err)
+			if err != nil {
+				log.Printf("failed to update order: %v", err)
 
 				// retry with the broker.HandleRetry
 				if err := broker.HandleRetry(ch, &msg); err != nil {
 					log.Printf("failed to handle retry in orders: %v", err)
 				}
-
-				msg.Nack(false, false)
-
+				
 				continue
 			}
+			log.Println("order has been updated from AMQP")
 
-			log.Printf("payment link: %v", paymentLink)
 			msg.Ack(false)
 		}
 	}(msgChan)

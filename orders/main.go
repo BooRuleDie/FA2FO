@@ -65,6 +65,10 @@ func main() {
 	service := NewService(store)
 	NewGrpcHandler(grpcServer, service, ch)
 
+	// start up rabbitmq consumer
+	consumer := NewConsumer(service)
+	go consumer.Listen(ch)
+
 
 	log.Println("GRPC server started listening on", grpcAddr)
 
