@@ -15,9 +15,10 @@ import (
 )
 
 var (
-	consulAddr  string = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	httpAddr    string = common.EnvString("HTTP_ADDR", ":8888")
-	serviceName string = "gateway"
+	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
+	httpAddr    = common.EnvString("HTTP_ADDR", ":8888")
+	serviceName = "gateway"
 )
 
 // Hardcoded values are currently used for demonstration purposes
@@ -28,6 +29,11 @@ var (
 // var orderServiceAddr = "localhost:3000"
 
 func main() {
+	// set global tracer
+	if err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr); err != nil {
+		log.Fatalf("failed to start global tracer: %v", err)
+	}
+
 	registry, err := consul.NewRegistry(consulAddr, serviceName)
 	if err != nil {
 		panic(err)

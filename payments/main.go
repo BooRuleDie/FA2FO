@@ -10,8 +10,8 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
-	"github.com/BooRuleDie/Microservice-in-Go/payments/gateway"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
+	"github.com/BooRuleDie/Microservice-in-Go/payments/gateway"
 	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/stripe/stripe-go/v81"
@@ -19,19 +19,25 @@ import (
 )
 
 var (
-	consulAddr           string = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	grpcAddr             string = common.EnvString("GRPC_ADDR", "localhost:3002")
-	serviceName          string = "payment"
-	amqpUser             string = common.EnvString("AMQP_USER", "guest")
-	amqpPass             string = common.EnvString("AMQP_PASS", "guest")
-	amqpHost             string = common.EnvString("AMQP_HOST", "localhost")
-	amqpPort             string = common.EnvString("AMQP_PORT", "5672")
-	stripeKey            string = common.EnvString("STRIPE_KEY", "")
-	httpAddr             string = common.EnvString("HTTP_ADDR", "localhost:8082")
-	endpointStripeSecret string = common.EnvString("ENDPOINT_STRIPE_SECRET", "")
+	consulAddr           = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	grpcAddr             = common.EnvString("GRPC_ADDR", "localhost:3002")
+	serviceName          = "payment"
+	amqpUser             = common.EnvString("AMQP_USER", "guest")
+	amqpPass             = common.EnvString("AMQP_PASS", "guest")
+	amqpHost             = common.EnvString("AMQP_HOST", "localhost")
+	amqpPort             = common.EnvString("AMQP_PORT", "5672")
+	stripeKey            = common.EnvString("STRIPE_KEY", "")
+	httpAddr             = common.EnvString("HTTP_ADDR", "localhost:8082")
+	endpointStripeSecret = common.EnvString("ENDPOINT_STRIPE_SECRET", "")
+	jaegerAddr = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
 func main() {
+	// set global tracer
+	if err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr); err != nil {
+		log.Fatalf("failed to start global tracer: %v", err)
+	}
+
 	registry, err := consul.NewRegistry(consulAddr, serviceName)
 	if err != nil {
 		panic(err)

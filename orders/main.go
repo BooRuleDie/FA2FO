@@ -15,17 +15,22 @@ import (
 )
 
 var (
-	consulAddr  string = common.EnvString("CONSUL_ADDR", "localhost:8500")
-	grpcAddr    string = common.EnvString("GRPC_ADDR", "localhost:3000")
-	serviceName string = "orders"
-	amqpUser    string = common.EnvString("AMQP_USER", "guest")
-	amqpPass    string = common.EnvString("AMQP_PASS", "guest")
-	amqpHost    string = common.EnvString("AMQP_HOST", "localhost")
-	amqpPort    string = common.EnvString("AMQP_PORT", "5672")
-
+	consulAddr  = common.EnvString("CONSUL_ADDR", "localhost:8500")
+	grpcAddr    = common.EnvString("GRPC_ADDR", "localhost:3000")
+	serviceName = "orders"
+	amqpUser    = common.EnvString("AMQP_USER", "guest")
+	amqpPass    = common.EnvString("AMQP_PASS", "guest")
+	amqpHost    = common.EnvString("AMQP_HOST", "localhost")
+	amqpPort    = common.EnvString("AMQP_PORT", "5672")
+	jaegerAddr = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
 func main() {
+	// set global tracer
+	if err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr); err != nil {
+		log.Fatalf("failed to start global tracer: %v", err)
+	}
+
 	registry, err := consul.NewRegistry(consulAddr, serviceName)
 	if err != nil {
 		panic(err)
@@ -47,11 +52,10 @@ func main() {
 
 	// message broker setup
 	ch, close := broker.Connect(amqpUser, amqpPass, amqpHost, amqpPort)
-	defer func(){
+	defer func() {
 		close()
 		ch.Close()
 	}()
-
 
 	// create the grpc server
 	grpcServer := grpc.NewServer()
@@ -68,7 +72,6 @@ func main() {
 	// start up rabbitmq consumer
 	consumer := NewConsumer(service)
 	go consumer.Listen(ch)
-
 
 	log.Println("GRPC server started listening on", grpcAddr)
 

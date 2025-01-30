@@ -7,6 +7,8 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
 	"github.com/BooRuleDie/Microservice-in-Go/gateway/gateway"
+	"go.opentelemetry.io/otel"
+	otelCodes "go.opentelemetry.io/otel/codes"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -34,9 +36,16 @@ func (h *handler) handleGetOrder(rw http.ResponseWriter, r *http.Request) {
 		OrderID:    orderID,
 	}
 
-	o, err := h.gateway.GetOrder(r.Context(), gor)
+	// create a tracer and pass the context into CreateOrder rpc call
+	tr := otel.Tracer("http")
+	ctx, span := tr.Start(r.Context(), fmt.Sprintf("%s %s", r.Method, r.RequestURI))
+	defer span.End()
+
+	o, err := h.gateway.GetOrder(ctx, gor)
 	rStatus := status.Convert(err)
 	if rStatus != nil {
+		span.SetStatus(otelCodes.Error, err.Error())
+
 		if rStatus.Code() != codes.InvalidArgument {
 			common.WriteError(rw, http.StatusBadRequest, rStatus.Message())
 			return // don't continue executing rest of the code if it's an error
@@ -64,7 +73,12 @@ func (h *handler) handleCreateOrder(rw http.ResponseWriter, r *http.Request) {
 		return // don't continue executing rest of the code if it's an error
 	}
 
-	o, err := h.gateway.CreateOrder(r.Context(), &pb.CreateOrderRequest{
+	// create a tracer and pass the context into CreateOrder rpc call
+	tr := otel.Tracer("http")
+	ctx, span := tr.Start(r.Context(), fmt.Sprintf("%s %s", r.Method, r.RequestURI))
+	defer span.End()
+
+	o, err := h.gateway.CreateOrder(ctx, &pb.CreateOrderRequest{
 		CustomerID: customerID,
 		Items:      items,
 	})
@@ -77,6 +91,8 @@ func (h *handler) handleCreateOrder(rw http.ResponseWriter, r *http.Request) {
 	// to achieve that we need to handle the error like that:
 	rStatus := status.Convert(err)
 	if rStatus != nil {
+		span.SetStatus(otelCodes.Error, err.Error())
+
 		if rStatus.Code() != codes.InvalidArgument {
 			common.WriteError(rw, http.StatusBadRequest, rStatus.Message())
 			return // don't continue executing rest of the code if it's an error
@@ -88,7 +104,7 @@ func (h *handler) handleCreateOrder(rw http.ResponseWriter, r *http.Request) {
 
 	redirectUrl := fmt.Sprintf("http://localhost%s/success.html?customerID=%s&orderID=%s", httpAddr, o.CustomerID, o.ID)
 	cor := &CreateOrderRequest{
-		Order: o,
+		Order:         o,
 		RedirectToUrl: redirectUrl,
 	}
 
