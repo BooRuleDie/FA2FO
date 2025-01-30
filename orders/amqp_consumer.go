@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
 )
 
 type consumer struct {
@@ -31,7 +33,7 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 	}
 
 	// autoAck -> false
-	msgChan, err := ch.Consume(q.Name, "", true, false, false, false, nil)
+	msgChan, err := ch.Consume(q.Name, "", false, false, false, false, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -50,6 +52,12 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				continue
 			}
 
+			// extract amqp headers
+			ctx := broker.ExtractAMQPHeaders(context.Background(), msg.Headers)
+			tr := otel.Tracer("amqp")
+			spanName := fmt.Sprintf("AMQP - consume - %s", q.Name)
+			_, messageSpan := tr.Start(ctx, spanName)
+
 			_, err := c.service.UpdateOrder(
 				context.Background(),
 				o,
@@ -61,9 +69,13 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 				if err := broker.HandleRetry(ch, &msg); err != nil {
 					log.Printf("failed to handle retry in orders: %v", err)
 				}
-				
+
 				continue
 			}
+
+			messageSpan.AddEvent("order.updated")
+			messageSpan.End()
+
 			log.Println("order has been updated from AMQP")
 
 			msg.Ack(false)

@@ -152,3 +152,5 @@ func createDLQAndDLX(ch *amqp.Channel) error {
 
 	return err
 }
+
+

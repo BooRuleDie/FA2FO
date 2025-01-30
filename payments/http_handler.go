@@ -15,6 +15,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 	"github.com/stripe/stripe-go/v81"
 	"github.com/stripe/stripe-go/v81/webhook"
+	"go.opentelemetry.io/otel"
 )
 
 type PaymentHTTPHandler struct {
@@ -71,18 +72,28 @@ func (p *PaymentHTTPHandler) handleCheckoutWebhook(w http.ResponseWriter, req *h
 
 			// marshal the order for fanout
 			o := &pb.Order{
-				ID: cs.Metadata["orderID"],
-				CustomerID: cs.Metadata["customerID"],
+				ID:          cs.Metadata["orderID"],
+				CustomerID:  cs.Metadata["customerID"],
 				Status:      "paid",
 				PaymentLink: "",
 			}
-			marshalledOrder, _ := json.Marshal(o)
+			marshalledOrder, err := json.Marshal(o)
+			if err != nil {
+				log.Fatal(err.Error())
+			}
+
+			tr := otel.Tracer("amqp")
+			spanName := fmt.Sprintf("AMQP - publish - %s", broker.OrderPaidEvent)
+			amqpContext, messageSpan := tr.Start(ctx, spanName)
+			defer messageSpan.End()
+			headers := broker.InjectAMQPHeaders(amqpContext)
 
 			// publish the message
 			p.channel.PublishWithContext(ctx, broker.OrderPaidEvent, "", false, false, amqp.Publishing{
 				ContentType:  "application/json",
 				Body:         marshalledOrder,
 				DeliveryMode: amqp.Persistent,
+				Headers:      headers,
 			})
 
 			log.Println("Message published order.paid")

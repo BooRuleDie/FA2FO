@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"go.opentelemetry.io/otel"
 )
 
 type consumer struct {
@@ -35,6 +37,12 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 		for msg := range msgChan {
 			log.Printf("Message recevied: %s", msg.Body)
 
+			// extract amqp headers
+			ctx := broker.ExtractAMQPHeaders(context.Background(), msg.Headers)
+			tr := otel.Tracer("amqp")
+			spanName := fmt.Sprintf("AMQP - consume - %s", q.Name)
+			_, messageSpan := tr.Start(ctx, spanName)
+
 			o := &pb.Order{}
 			if err := json.Unmarshal(msg.Body, o); err != nil {
 				// don't put it back to queue again
@@ -61,6 +69,9 @@ func (c *consumer) Listen(ch *amqp.Channel) {
 
 				continue
 			}
+
+			messageSpan.AddEvent(fmt.Sprintf("payment.created: %s", paymentLink))
+			messageSpan.End()
 
 			log.Printf("payment link: %v", paymentLink)
 			msg.Ack(false)

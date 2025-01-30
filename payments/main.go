@@ -71,7 +71,8 @@ func main() {
 	processor := stripeProcesser.NewStripe()
 	gateway := gateway.NewGateway(registry)
 	srv := NewService(processor, gateway)
-	consumer := NewConsumer(srv)
+	serviceWithTelemetry := NewServiceWithTelemetry(srv)
+	consumer := NewConsumer(serviceWithTelemetry)
 	go consumer.Listen(ch)
 
 	// set up the http server for webhook

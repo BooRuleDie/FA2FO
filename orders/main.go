@@ -67,7 +67,9 @@ func main() {
 
 	store := NewStore()
 	service := NewService(store)
-	NewGrpcHandler(grpcServer, service, ch)
+	serviceWithTelemetry := NewServiceWithTelemetry(service)
+
+	NewGrpcHandler(grpcServer, serviceWithTelemetry, ch)
 
 	// start up rabbitmq consumer
 	consumer := NewConsumer(service)
