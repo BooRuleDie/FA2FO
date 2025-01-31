@@ -15,6 +15,7 @@ import (
 	stripeProcesser "github.com/BooRuleDie/Microservice-in-Go/payments/processor/stripe"
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/stripe/stripe-go/v81"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -29,10 +30,13 @@ var (
 	stripeKey            = common.EnvString("STRIPE_KEY", "")
 	httpAddr             = common.EnvString("HTTP_ADDR", "localhost:8082")
 	endpointStripeSecret = common.EnvString("ENDPOINT_STRIPE_SECRET", "")
-	jaegerAddr = common.EnvString("JAEGER_ADDR", "localhost:4318")
+	jaegerAddr           = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+
 	// set global tracer
 	if err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr); err != nil {
 		log.Fatalf("failed to start global tracer: %v", err)
@@ -72,7 +76,8 @@ func main() {
 	gateway := gateway.NewGateway(registry)
 	srv := NewService(processor, gateway)
 	serviceWithTelemetry := NewServiceWithTelemetry(srv)
-	consumer := NewConsumer(serviceWithTelemetry)
+	serviceWithLogging := NewServiceWithLogging(serviceWithTelemetry, logger)
+	consumer := NewConsumer(serviceWithLogging)
 	go consumer.Listen(ch)
 
 	// set up the http server for webhook
