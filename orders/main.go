@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net"
 	"time"
 
@@ -11,6 +10,7 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
 	_ "github.com/joho/godotenv/autoload"
+	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
 
@@ -22,13 +22,16 @@ var (
 	amqpPass    = common.EnvString("AMQP_PASS", "guest")
 	amqpHost    = common.EnvString("AMQP_HOST", "localhost")
 	amqpPort    = common.EnvString("AMQP_PORT", "5672")
-	jaegerAddr = common.EnvString("JAEGER_ADDR", "localhost:4318")
+	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
 )
 
 func main() {
+	logger, _ := zap.NewProduction()
+	defer logger.Sync() // flushes buffer, if any
+
 	// set global tracer
 	if err := common.SetGlobalTracer(context.TODO(), serviceName, jaegerAddr); err != nil {
-		log.Fatalf("failed to start global tracer: %v", err)
+		logger.Fatal("failed to start global tracer", zap.Error(err))
 	}
 
 	registry, err := consul.NewRegistry(consulAddr, serviceName)
@@ -43,7 +46,7 @@ func main() {
 	go func() {
 		for {
 			if err := registry.HealthCheck(instanceID, serviceName); err != nil {
-				log.Fatalf("failed to health check. error: %v", err)
+				logger.Fatal("failed to health check", zap.Error(err))
 			}
 			time.Sleep(time.Second * 1)
 		}
@@ -61,23 +64,25 @@ func main() {
 	grpcServer := grpc.NewServer()
 	l, err := net.Listen("tcp", grpcAddr)
 	if err != nil {
-		log.Fatalf("failed to start grpc listener. error: %v", err)
+		logger.Fatal("failed to start grpc listener", zap.Error(err))
 	}
 	defer l.Close()
 
 	store := NewStore()
 	service := NewService(store)
+	// middlewares
 	serviceWithTelemetry := NewServiceWithTelemetry(service)
+	serviceWithLogger := NewServiceWithLogging(serviceWithTelemetry, logger)
 
-	NewGrpcHandler(grpcServer, serviceWithTelemetry, ch)
+	NewGrpcHandler(grpcServer, serviceWithLogger, ch)
 
 	// start up rabbitmq consumer
 	consumer := NewConsumer(service)
 	go consumer.Listen(ch)
 
-	log.Println("GRPC server started listening on", grpcAddr)
+	logger.Info("GRPC server started listening on", zap.String("port", grpcAddr))
 
 	if err := grpcServer.Serve(l); err != nil {
-		log.Fatalf("grpc server failed to serve. error: %v", err)
+		logger.Fatal("GRPC server failed to serve", zap.Error(err))
 	}
 }
