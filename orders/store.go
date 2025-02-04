@@ -17,7 +17,7 @@ func NewStore() *store {
 	return &store{}
 }
 
-func (s *store) Create(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Items) (string, error) {
+func (s *store) Create(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (string, error) {
 	id := "42"
 	order := &pb.Order{
 		ID:         id,

@@ -26,7 +26,7 @@ func (s *service) GetOrder(ctx context.Context, p *pb.GetOrderRequest) (*pb.Orde
 	return o, nil
 }
 
-func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Items) (*pb.Order, error) {
+func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
 	id, err := s.store.Create(ctx, p, items)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, erro
 }
 
 
-func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Items, error) {
+func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Item, error) {
 	for _, i := range p.Items {
 		if i.ID == "" {
 			return nil, common.ErrNoID
@@ -73,9 +73,9 @@ func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) (
 	// validate stock service
 
 	// temp solution
-	var itemsWithPrice []*pb.Items
+	var itemsWithPrice []*pb.Item
 	for _, i := range uniqueItems {
-		itemsWithPrice = append(itemsWithPrice, &pb.Items{
+		itemsWithPrice = append(itemsWithPrice, &pb.Item{
 			ID:       i.ID,
 			PriceID:  "price_1QjkX803Z3EsCQWvk1md8nT5",
 			Quantity: i.Quantity,

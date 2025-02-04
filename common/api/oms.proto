@@ -4,6 +4,28 @@ option go_package = "github.com/BooRuleDie/Microservice-in-Go/common/api";
 
 package api;
 
+service StockService {
+    rpc CheckIfItemIsInStock(CheckIfItemIsInStockRequest) returns (CheckIfItemIsInStockResponse);
+    rpc GetItems(GetItemsRequest) returns (GetItemsResponse);
+}
+
+message CheckIfItemIsInStockRequest {
+    repeated ItemsWithQuantity Items = 1;
+}
+
+message CheckIfItemIsInStockResponse {
+    bool InStock = 1;
+    repeated Item Items = 2;
+}
+
+message GetItemsRequest {
+    repeated string ItemIDs = 1;
+}
+
+message GetItemsResponse {
+    repeated Item Items = 1;
+}
+
 service OrderService {
     rpc CreateOrder(CreateOrderRequest) returns (Order);
     rpc GetOrder(GetOrderRequest) returns (Order);
@@ -25,7 +47,7 @@ message GetOrderRequest {
     string orderID = 2;
 }
 
-message Items {
+message Item {
     string ID = 1;
     string Name = 2;
     int32 Quantity = 3;
@@ -36,6 +58,6 @@ message Order {
     string ID = 1;
     string customerID = 2;
     string status = 3;
-    repeated Items Items = 4;
+    repeated Item Items = 4;
     string paymentLink = 5;
 }

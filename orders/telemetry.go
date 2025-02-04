@@ -27,7 +27,7 @@ func (s *serviceWithTelemetry) GetOrder(ctx context.Context, p *pb.GetOrderReque
 	return s.next.GetOrder(ctx, p)
 }
 
-func (s *serviceWithTelemetry) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Items) (*pb.Order, error) {
+func (s *serviceWithTelemetry) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
 	span := trace.SpanFromContext(ctx)
 	eventValue := fmt.Sprintf("CreateOrder: %v, items: %v", p, items)
 	span.AddEvent(eventValue)
@@ -41,7 +41,7 @@ func (s *serviceWithTelemetry) UpdateOrder(ctx context.Context, o *pb.Order) (*p
 	return s.next.UpdateOrder(ctx, o)
 }
 
-func (s *serviceWithTelemetry) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Items, error) {
+func (s *serviceWithTelemetry) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Item, error) {
 	span := trace.SpanFromContext(ctx)
 	eventValue := fmt.Sprintf("ValidateItems: %v", p)
 	span.AddEvent(eventValue)

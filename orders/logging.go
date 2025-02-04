@@ -30,7 +30,7 @@ func (s *serviceWithLogging) GetOrder(ctx context.Context, p *pb.GetOrderRequest
 	return s.next.GetOrder(ctx, p)
 }
 
-func (s *serviceWithLogging) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Items) (*pb.Order, error) {
+func (s *serviceWithLogging) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
 	start := time.Now()
 	defer func(){
 		s.logger.Info("CreateOrder", zap.Duration("took", time.Since(start)))
@@ -46,7 +46,7 @@ func (s *serviceWithLogging) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.
 	return s.next.UpdateOrder(ctx, o)
 }
 
-func (s *serviceWithLogging) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Items, error) {
+func (s *serviceWithLogging) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Item, error) {
 	start := time.Now()
 	defer func(){
 		s.logger.Info("ValidateItems", zap.Duration("took", time.Since(start)))
