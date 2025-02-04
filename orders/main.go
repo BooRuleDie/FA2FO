@@ -9,6 +9,7 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common/broker"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery"
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
+	"github.com/BooRuleDie/Microservice-in-Go/orders/gateway"
 	_ "github.com/joho/godotenv/autoload"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
@@ -69,7 +70,8 @@ func main() {
 	defer l.Close()
 
 	store := NewStore()
-	service := NewService(store)
+	gateway := gateway.NewGateway(registry)
+	service := NewService(store, gateway)
 	// middlewares
 	serviceWithTelemetry := NewServiceWithTelemetry(service)
 	serviceWithLogger := NewServiceWithLogging(serviceWithTelemetry, logger)

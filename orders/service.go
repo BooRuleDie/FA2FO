@@ -2,19 +2,21 @@ package main
 
 import (
 	"context"
-	"log"
 
 	"github.com/BooRuleDie/Microservice-in-Go/common"
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
+	"github.com/BooRuleDie/Microservice-in-Go/orders/gateway"
 )
 
 type service struct {
-	store OrderStore
+	store   OrderStore
+	gateway gateway.StockGateway
 }
 
-func NewService(store OrderStore) *service {
+func NewService(store OrderStore, gateway gateway.StockGateway) *service {
 	return &service{
-		store: store,
+		store:   store,
+		gateway: gateway,
 	}
 }
 
@@ -33,10 +35,10 @@ func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, ite
 	}
 
 	o := &pb.Order{
-		ID: id,
-		Items: items,
-		Status: "pending",
-		CustomerID: p.CustomerID,
+		ID:          id,
+		Items:       items,
+		Status:      "pending",
+		CustomerID:  p.CustomerID,
 		PaymentLink: "",
 	}
 
@@ -51,7 +53,6 @@ func (s *service) UpdateOrder(ctx context.Context, o *pb.Order) (*pb.Order, erro
 	return o, nil
 }
 
-
 func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) ([]*pb.Item, error) {
 	for _, i := range p.Items {
 		if i.ID == "" {
@@ -64,25 +65,22 @@ func (s *service) ValidateItems(ctx context.Context, p *pb.CreateOrderRequest) (
 	}
 
 	uniqueItems := getUniqueItems(p.Items)
-	log.Println("Unique items:", uniqueItems)
+	// log.Println("Unique items:", uniqueItems)
 
 	if len(uniqueItems) == 0 {
 		return nil, common.ErrNoItems
 	}
 
 	// validate stock service
-
-	// temp solution
-	var itemsWithPrice []*pb.Item
-	for _, i := range uniqueItems {
-		itemsWithPrice = append(itemsWithPrice, &pb.Item{
-			ID:       i.ID,
-			PriceID:  "price_1QjkX803Z3EsCQWvk1md8nT5",
-			Quantity: i.Quantity,
-		})
+	inStock, items, err := s.gateway.CheckIfItemIsInStock(ctx, p.CustomerID, uniqueItems)
+	if err != nil {
+		return nil, err
+	}
+	if !inStock {
+		return items, common.ErrOutOfStock
 	}
 
-	return itemsWithPrice, nil
+	return items, nil
 }
 
 func getUniqueItems(items []*pb.ItemsWithQuantity) []*pb.ItemsWithQuantity {
