@@ -2,57 +2,71 @@ package main
 
 import (
 	"context"
-	"errors"
 
 	pb "github.com/BooRuleDie/Microservice-in-Go/common/api"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
+	"gopkg.in/mgo.v2/bson"
 )
 
-var inmemStore = make([]*pb.Order, 0)
+const (
+	dbName         = "orders"
+	collectionName = "orders"
+)
 
 type store struct {
-	// mongoDB store here
+	db *mongo.Client
 }
 
-func NewStore() *store {
-	return &store{}
+func NewStore(db *mongo.Client) *store {
+	return &store{db: db}
 }
 
-func (s *store) Create(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (string, error) {
-	id := "42"
-	order := &pb.Order{
-		ID:         id,
-		CustomerID: p.CustomerID,
-		Status:     "pending",
-		Items:      items,
-		PaymentLink: "",
-	}
-	inmemStore = append(inmemStore, order)
-	// fmt.Println("inmemStore: ", inmemStore)
+func (s *store) Create(ctx context.Context, o Order) (primitive.ObjectID, error) {
+	col := s.db.Database(dbName).Collection(collectionName)
+	r, err := col.InsertOne(ctx, o)
+	id := r.InsertedID.(primitive.ObjectID)
 
-	return id, nil
+	return id, err
 }
 
-func (s *store) Get(ctx context.Context, p *pb.GetOrderRequest) (*pb.Order, error) {
-	for _, o := range inmemStore {
-		if o.ID == p.OrderID && o.CustomerID == p.CustomerID {
-			return o, nil
-		}
+func (s *store) Get(ctx context.Context, id, customerID string) (*Order, error) {
+	col := s.db.Database(dbName).Collection(collectionName)
+
+	oID, err := primitive.ObjectIDFromHex(id)
+	if err != nil {
+		return nil, err
 	}
 
-	// fmt.Println("inmemStore: ", inmemStore)
+	var o Order
+	err = col.FindOne(ctx, bson.M{
+		"_id":        oID,
+		"customerID": customerID,
+	}).Decode(&o)
 
-	return nil, errors.New("order not found")
+	return &o, err
 }
 
 func (s *store) Update(ctx context.Context, ID string, newOrder *pb.Order) error {
-	for i, order := range inmemStore {
-		if ID == order.ID {
-			inmemStore[i].Status = newOrder.Status
-			inmemStore[i].PaymentLink = newOrder.PaymentLink
+	col := s.db.Database(dbName).Collection(collectionName)
 
-			return nil
-		}		
+	oID, err := primitive.ObjectIDFromHex(ID)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	_, err = col.UpdateOne(
+		ctx,
+		bson.M{
+			"_id": oID,
+		},
+		bson.M{
+			"$set": bson.M{
+				"paymentLink": newOrder.PaymentLink,
+				"status":      newOrder.Status,
+			},
+		},
+	)
+
+	return err
 }

@@ -21,21 +21,30 @@ func NewService(store OrderStore, gateway gateway.StockGateway) *service {
 }
 
 func (s *service) GetOrder(ctx context.Context, p *pb.GetOrderRequest) (*pb.Order, error) {
-	o, err := s.store.Get(ctx, p)
+	o, err := s.store.Get(ctx, p.OrderID, p.CustomerID)
 	if err != nil {
 		return nil, err
 	}
-	return o, nil
+	
+	return o.toProto(), nil
 }
 
 func (s *service) CreateOrder(ctx context.Context, p *pb.CreateOrderRequest, items []*pb.Item) (*pb.Order, error) {
-	id, err := s.store.Create(ctx, p, items)
+	id, err := s.store.Create(ctx, Order{
+		Items:       items,
+		Status:      "pending",
+		CustomerID:  p.CustomerID,
+		PaymentLink: "",
+	})
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO: store.CreateOrder can return the pb.Order 
+	// creating almost same data twice in the service
+	// doesn't make sense
 	o := &pb.Order{
-		ID:          id,
+		ID:          id.Hex(),
 		Items:       items,
 		Status:      "pending",
 		CustomerID:  p.CustomerID,

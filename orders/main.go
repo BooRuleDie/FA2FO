@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
@@ -11,6 +12,9 @@ import (
 	"github.com/BooRuleDie/Microservice-in-Go/common/discovery/consul"
 	"github.com/BooRuleDie/Microservice-in-Go/orders/gateway"
 	_ "github.com/joho/godotenv/autoload"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -24,6 +28,11 @@ var (
 	amqpHost    = common.EnvString("AMQP_HOST", "localhost")
 	amqpPort    = common.EnvString("AMQP_PORT", "5672")
 	jaegerAddr  = common.EnvString("JAEGER_ADDR", "localhost:4318")
+
+	mongoDBUser = common.EnvString("MONGODB_USER", "root")
+	mongoDBPass = common.EnvString("MONGODB_PASS", "example")
+	mongoDBHost = common.EnvString("MONGODB_HOST", "localhost")
+	mongoDBPort = common.EnvString("MONGODB_PORT", "27017")
 )
 
 func main() {
@@ -61,6 +70,13 @@ func main() {
 		ch.Close()
 	}()
 
+	// mongo db connection
+	connectionString := fmt.Sprintf("mongodb://%s:%s@%s:%s", mongoDBUser, mongoDBPass, mongoDBHost, mongoDBPort)
+	mongoDBClient, err := connectToMongoDB(connectionString)
+	if err != nil {
+		logger.Fatal("failed to connect MongoDB", zap.Error(err))
+	}
+
 	// create the grpc server
 	grpcServer := grpc.NewServer()
 	l, err := net.Listen("tcp", grpcAddr)
@@ -69,7 +85,7 @@ func main() {
 	}
 	defer l.Close()
 
-	store := NewStore()
+	store := NewStore(mongoDBClient)
 	gateway := gateway.NewGateway(registry)
 	service := NewService(store, gateway)
 	// middlewares
@@ -87,4 +103,20 @@ func main() {
 	if err := grpcServer.Serve(l); err != nil {
 		logger.Fatal("GRPC server failed to serve", zap.Error(err))
 	}
+}
+
+func connectToMongoDB(url string) (*mongo.Client, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(url))
+	if err != nil {
+		return nil, err
+	}
+
+	// ping the database
+	if err = client.Ping(ctx, readpref.Primary()); err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
