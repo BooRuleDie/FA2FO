@@ -1,163 +1,263 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>Thanks for your order!</title>
-        <link rel="stylesheet" href="style.css" />
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Order Confirmation</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+            :root {
+                --color-primary: #10B981;
+                --color-primary-hover: #059669;
+                --color-text: #1F2937;
+                --color-background: #EDEDED;
+                --color-surface: #FFFFFF;
+                --color-gray-600: #6B7280;
+                --color-gray-700: #374151;
+                --color-emerald-50: #ECFDF5;
+                --color-emerald-700: #047857;
+            }
+
+            html {
+                font-family: 'Inter', system-ui, -apple-system, sans-serif;
+                background-color: var(--color-background);
+                color: var(--color-text);
+                line-height: 1.5;
+            }
+
+            body {
+                margin: 0;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .container {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding: 2rem;
+                text-align: center;
+            }
+
+            .content-box {
+                background: var(--color-surface);
+                padding: 2.5rem;
+                border-radius: 1rem;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+                max-width: 32rem;
+                width: 100%;
+                margin: 1rem;
+            }
+
+            h1 {
+                font-size: 1.5rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                margin-top: 0;
+            }
+
+            h2 {
+                font-size: 1.25rem;
+                font-weight: 600;
+                margin-bottom: 0.5rem;
+                margin-top: 0;
+            }
+
+            .text-gray-600 {
+                color: var(--color-gray-600);
+                margin: 0 0 1rem 0;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 0.5rem 1rem;
+                border-radius: 0.375rem;
+                font-weight: 500;
+                background-color: #F3F4F6;
+                color: var(--color-gray-600);
+                margin-top: 1.5rem;
+                box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
+
+            .status-badge.active {
+                background-color: var(--color-emerald-50);
+                color: var(--color-primary);
+            }
+
+            .popup {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: var(--color-surface);
+                padding: 2rem;
+                border-radius: 0.75rem;
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+                z-index: 50;
+                width: 90%;
+                max-width: 24rem;
+            }
+
+            .popup-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(4px);
+                z-index: 40;
+            }
+
+            .order-id-box {
+                background-color: var(--color-emerald-50);
+                padding: 0.75rem 1rem;
+                border-radius: 0.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .order-id-text {
+                font-size: 0.875rem;
+                font-weight: 500;
+                color: var(--color-emerald-700);
+                margin: 0;
+            }
+
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.625rem 1.5rem;
+                border-radius: 0.5rem;
+                font-weight: 500;
+                transition: all 0.15s ease;
+                text-decoration: none;
+                cursor: pointer;
+            }
+
+            .btn-primary {
+                background-color: var(--color-primary);
+                color: white;
+                border: none;
+            }
+
+            .btn-primary:hover {
+                background-color: var(--color-primary-hover);
+            }
+
+            .btn-close {
+                background-color: #F3F4F6;
+                color: var(--color-text);
+                margin-top: 1.5rem;
+                border: none;
+            }
+
+            .btn-close:hover {
+                background-color: #E5E7EB;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
+            @media (max-width: 640px) {
+                .content-box {
+                    padding: 1.5rem;
+                }
+                
+                .popup {
+                    padding: 1.5rem;
+                }
+            }
+        </style>
     </head>
-
-    <style>
-        html {
-            font-family: Arial, sans-serif;
-            font-size: 16px;
-            margin: 0;
-            padding: 0;
-            background-color: wheat;
-            color: #333333;
-        }
-
-        section {
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .ready-popup {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 2px solid green;
-            border-radius: 5px;
-            z-index: 1;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-        }
-
-        .payment-popup {
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            background-color: #f9f9f9;
-            border: 2px solid green;
-            border-radius: 5px;
-            z-index: 1;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
-        }
-
-        .payment-popup a {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: green;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-
-        .ready-popup p {
-            margin: 0;
-        }
-
-        .close-btn {
-            margin-top: 10px;
-            padding: 5px 10px;
-            background-color: green;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-    </style>
-
     <body>
-        <section>
-            <p>Your order has been placed successfully!</p>
+        <div class="container">
+            <div class="content-box">
+                <h1>🎉 Order Placed Successfully!</h1>
+                <p class="text-gray-600">We're preparing your order</p>
+                <div class="status-badge active" id="orderStatus">
+                    Pending...
+                </div>
+            </div>
+        </div>
 
-            <p>Order Status: <span id="orderStatus">Pending...</span></p>
+        <div class="popup-overlay"></div>
 
-            <div class="ready-popup">
-                <p>Your order is ready for pickup!</p>
-
-                <p style="margin: 10px; color: brown">
-                    Order number <b>#<span id="orderID"></span></b>
-                </p>
-
-                <button
-                    class="close-btn"
-                    onclick="document.querySelector('.ready-popup').style.display = 'none'"
-                >
+        <div class="ready-popup popup">
+            <div class="text-center">
+                <h2>🚀 Ready for Pickup!</h2>
+                <p class="text-gray-600">Your order is ready to be collected</p>
+                <div class="order-id-box">
+                    <p class="order-id-text">
+                        Order #<span id="orderID"></span>
+                    </p>
+                </div>
+                <button class="btn btn-close" onclick="closePopup('.ready-popup')">
                     Close
                 </button>
             </div>
+        </div>
 
-            <div class="payment-popup">
-                <p>Waiting payment...</p>
-
-                <a id="payment-link" href="#">Go to Payment</a>
+        <div class="payment-popup popup">
+            <div class="text-center">
+                <h2>💳 Payment Required</h2>
+                <p class="text-gray-600">Please complete your payment</p>
+                <a id="payment-link" href="#" class="btn btn-primary">
+                    Proceed to Payment
+                </a>
             </div>
-        </section>
+        </div>
+
+        <script>
+            function closePopup(selector) {
+                document.querySelector(selector).style.display = 'none';
+                document.querySelector('.popup-overlay').style.display = 'none';
+            }
+
+            function showPopup(selector) {
+                document.querySelector(selector).style.display = 'flex';
+                document.querySelector(selector).style.justifyContent = 'center';
+                document.querySelector('.popup-overlay').style.display = 'block';
+            }
+
+            const poolOrderStatus = async () => {
+                const response = await fetch(
+                    `/api/customers/${customerID}/orders/${orderID}`
+                );
+
+                const data = await response.json();
+                const statusElement = document.getElementById("orderStatus");
+                
+                if (data.status === "waiting_payment") {
+                    statusElement.innerHTML = `Awaiting Payment...`;
+                    statusElement.classList.add('active');
+                    document.getElementById("payment-link").href = data.paymentLink;
+                    showPopup('.payment-popup');
+                }
+                if (data.status === "paid") {
+                    statusElement.innerHTML = `Preparing Your Order...`;
+                    statusElement.classList.add('active');
+                    setTimeout(poolOrderStatus, 5000);
+                } else if (data.status === "ready") {
+                    statusElement.innerHTML = `Ready for Pickup!`;
+                    statusElement.classList.add('active');
+                    document.querySelector('.payment-popup').style.display = 'none';
+                    document.getElementById("orderID").innerText = orderID;
+                    showPopup('.ready-popup');
+                } else {
+                    setTimeout(poolOrderStatus, 5000);
+                }
+            };
+
+            poolOrderStatus();
+        </script>
     </body>
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        const customerID = urlParams.get("customerID");
-        const orderID = urlParams.get("orderID");
-
-        const order = {
-            customerID,
-            orderID,
-            status: "pending",
-        };
-
-        // pool the server for the order status
-        const poolOrderStatus = async () => {
-            const response = await fetch(
-                `/api/customers/${customerID}/orders/${orderID}`
-            );
-
-            const data = await response.json();
-            if (data.status === "waiting_payment") {
-                order.Status = "Your order is waiting for payment...";
-                document.getElementById("orderStatus").innerText = order.Status;
-
-                // show payment popup
-                document.querySelector(".payment-popup").style.display =
-                    "block";
-                document.getElementById("payment-link").href = data.paymentLink;
-            }
-            if (data.status === "paid") {
-                order.Status =
-                    "Your order has been paid for. Please way while its being prepared...";
-                document.getElementById("orderStatus").innerText = order.Status;
-
-                setTimeout(poolOrderStatus, 5000);
-            } else if (data.status === "ready") {
-                order.Status = "ready";
-
-                // close payment popup
-                document.querySelector(".payment-popup").style.display = "none";
-
-                // show ready popup
-                document.querySelector(".ready-popup").style.display = "block";
-                document.getElementById("orderID").innerText = orderID;
-                document.getElementById("orderStatus").innerText = order.Status;
-            } else {
-                setTimeout(poolOrderStatus, 5000);
-            }
-        };
-
-        poolOrderStatus();
-    </script>
 </html>
