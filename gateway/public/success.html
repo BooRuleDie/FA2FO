@@ -182,7 +182,7 @@
         <div class="container">
             <div class="content-box">
                 <h1>🎉 Order Placed Successfully!</h1>
-                <p class="text-gray-600">We're preparing your order</p>
+                <p class="text-gray-600" id="status-description">We're preparing your order</p>
                 <div class="status-badge active" id="orderStatus">
                     Pending...
                 </div>
@@ -229,6 +229,10 @@
             }
 
             const poolOrderStatus = async () => {
+                const urlParams = new URLSearchParams(window.location.search);
+                const customerID = urlParams.get('customerID');
+                const orderID = urlParams.get('orderID');
+
                 const response = await fetch(
                     `/api/customers/${customerID}/orders/${orderID}`
                 );
