@@ -7,8 +7,8 @@ The project is not 100% complete, but it covers the key concepts I aimed to lear
 ## Architecture Overview
 ![Architecture Overview](./img/arch-overview.png)
 
-## Project Overview
-🚀 **Video coming soon!**
+## Project Overview (Video)
+![Project Overview](https://www.youtube.com/watch?v=2E_LKinLeIo)
 
 ## Technologies Used
 
