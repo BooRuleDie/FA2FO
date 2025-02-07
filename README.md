@@ -1,1 +1,1 @@
-![fa2fo.png](./img/fa2fo.png)
+![screenshot](./fa2fo.png)
