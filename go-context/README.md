@@ -1,13 +1,57 @@
-# What are Contexts?
+# Go Context Examples
 
-Contexts are data structures that help us propagate data and cancel operations (HTTP requests, database operations, etc.) across goroutines.
-For example, using a context you can pass user_id data gathered from a JWT token to child goroutines. 
+This repository demonstrates practical examples of using contexts in Go for managing cancellation signals, timeouts, and data propagation across goroutines.
 
-You can also create a timeout context and set its timeout value to 3 seconds, then use that context in a function that makes a request to a third-party service which shouldn't be waited on for more than 3 seconds. You can inspect the `example1.go` file for further examples.
+## Examples Overview
 
-# Context Cancellation
+1. **HTTP Request Timeout** (example1.go)
+   - Demonstrates making concurrent HTTP requests with timeout controls
+   - Shows how to properly cancel requests that exceed the time limit
 
-In Go, when a channel is closed, all channel listeners receive the zero value of that channel's type. This behavior is the foundation of how the Done channel works in contexts. 
+2. **Task Timeout** (example2.go)
+   - Illustrates basic task timeout implementation
+   - Uses select statements for handling timeouts gracefully
 
-The Done channel in a context is a `chan struct{}` type. When a context is cancelled (through manual cancellation, timeout, or deadline), its Done channel is closed. This closure makes all receivers get the zero value (empty `struct{}`), signaling that the context is no longer valid.
+3. **Context Values** (example3.go)
+   - Shows how to pass values through context
+   - Demonstrates sharing data across goroutines safely
 
+4. **Context Deadline** (example4.go)
+   - Implements deadline-based cancellation
+   - Examples of handling context cancellation signals
+
+5. **HTTP Client Timeout** (example5.go)
+   - Advanced HTTP client implementation with context
+   - Shows proper request cancellation handling
+
+6. **Database Operations** (example6.go)
+   - Demonstrates using context with SQL operations
+   - Includes CRUD operations with timeout controls
+
+7. **Custom Timeout Cause** (example7.go)
+   - Shows how to use WithTimeoutCause
+   - Implements custom error messages for timeouts
+
+## Running the Examples
+
+Use the provided Makefile to run specific examples:
+
+```bash
+make run 1  # Runs example1.go
+make run 2  # Runs example2.go
+# ... and so on
+```
+
+## Key Concepts
+
+- Contexts provide a way to carry deadlines, cancellation signals, and request-scoped values across API boundaries
+- They're essential for controlling timeouts in distributed systems
+- Help prevent resource leaks by properly cancelling operations
+
+## Requirements
+
+- Go 1.20 or higher
+- SQLite (for database examples)
+```
+
+This README.md is more structured, concise, and provides a clear overview of what each example demonstrates while maintaining brevity. It includes the essential information needed to understand and run the examples.
