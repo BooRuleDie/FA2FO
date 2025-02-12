@@ -1,3 +1,16 @@
+### Covered Concurrency Patterns
+
+[x] - **Worker Pools**: Distributing tasks across a fixed number of goroutines that process jobs from a shared queue
+[x] - **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next  
+[ ] - **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
+[ ] - **Generator Pattern**: Using channels to generate a sequence of values
+[ ] - **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
+[ ] - **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
+[ ] - **Context Pattern**: Managing cancellation, deadlines, and request-scoped values across API boundaries
+[ ] - **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
+[ ] - **Error Group**: Synchronizing multiple goroutines and collecting their errors
+[ ] - **Select Pattern**: Coordinating multiple channels and handling timeouts
+
 # Pipeline
 
 In the pipeline pattern, a process is divided into stages, where each stage is a function with an upstream and a downstream channel. A stage takes data from its upstream, processes it, and sends the result to its downstream. The next stage then consumes this data as its upstream input, and this process continues until the last stage completes the pipeline.
