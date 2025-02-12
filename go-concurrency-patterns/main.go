@@ -1,9 +1,11 @@
 package main
 
 import (
-	"go-concurrency-patterns/pipeline"
+	// "go-concurrency-patterns/pipeline"
+	"go-concurrency-patterns/workerpools"
 )
 
 func main() {
-	pipeline.Run()
+	// pipeline.Run()
+	workerpools.Run()
 }
