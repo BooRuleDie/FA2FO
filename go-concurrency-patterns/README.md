@@ -3,7 +3,7 @@
 - [x] **Worker Pools**: Distributing tasks across a fixed number of goroutines that process jobs from a shared queue
 - [x] **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next  
 - [x] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
-- [ ] **Generator Pattern**: Using channels to generate a sequence of values
+- [x] **Generator Pattern**: Using channels to generate a sequence of values
 - [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 - [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
 - [ ] **Context Pattern**: Managing cancellation, deadlines, and request-scoped values across API boundaries
@@ -28,3 +28,7 @@ In this pattern, there are generally multiple goroutines listening to the same c
 The Fan-in/Fan-out pattern is a powerful concurrency design that combines two complementary operations: distributing work across multiple goroutines (fan-out) and consolidating results back into a single channel (fan-in). In the fan-out phase, a single channel's data is distributed to multiple goroutines for parallel processing. The fan-in phase then merges the output from these multiple goroutines back into a single channel, effectively combining their results. 
 
 This pattern is particularly useful for CPU-intensive tasks that can benefit from parallel processing, while maintaining ordered data flow through the system. Despite its simple concept, it's one of the most frequently used and effective concurrency patterns in Go. For a detailed implementation example, you can refer to the code in: `faninfanout/faninfanout.go`
+
+# Generator
+
+The Generator pattern has been utilized as a foundational component in several of the concurrency patterns we've implemented. It's a simple but powerful pattern that takes variadic input and returns a receive-only channel. A goroutine launched by the generator continuously sends values from the input to the channel, allowing other parts of the program to receive and process these values asynchronously. For implementation details, you can refer to the file: `generator/generator.go`
