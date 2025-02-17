@@ -2,7 +2,7 @@
 
 - [x] **Worker Pools**: Distributing tasks across a fixed number of goroutines that process jobs from a shared queue
 - [x] **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next  
-- [ ] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
+- [x] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
 - [ ] **Generator Pattern**: Using channels to generate a sequence of values
 - [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 - [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
@@ -22,3 +22,9 @@ The only exception to this flow is the first stage, also known as the producer o
 They're very similar to thread pools. Essentially, you have a couple of goroutines that are always listening to specific channels, such as the jobs and results channels. They continuously consume from the jobs channel, process the data, and then send it to the results channel. The name of the pattern comes from the number of goroutines involved. 
 
 In this pattern, there are generally multiple goroutines listening to the same channel, which makes them resemble workers. For further details, you can inspect the implementation in this file: `workerpools/workerpools.go`.
+
+# Fan-in & Fan-out
+
+The Fan-in/Fan-out pattern is a powerful concurrency design that combines two complementary operations: distributing work across multiple goroutines (fan-out) and consolidating results back into a single channel (fan-in). In the fan-out phase, a single channel's data is distributed to multiple goroutines for parallel processing. The fan-in phase then merges the output from these multiple goroutines back into a single channel, effectively combining their results. 
+
+This pattern is particularly useful for CPU-intensive tasks that can benefit from parallel processing, while maintaining ordered data flow through the system. Despite its simple concept, it's one of the most frequently used and effective concurrency patterns in Go. For a detailed implementation example, you can refer to the code in: `faninfanout/faninfanout.go`
