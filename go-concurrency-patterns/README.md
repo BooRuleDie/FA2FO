@@ -4,11 +4,10 @@
 - [x] **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next  
 - [x] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
 - [x] **Generator Pattern**: Using channels to generate a sequence of values
+- [x] **Error Group**: Synchronizing multiple goroutines and collecting their errors
 - [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 - [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
-- [ ] **Context Pattern**: Managing cancellation, deadlines, and request-scoped values across API boundaries
 - [ ] **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
-- [ ] **Error Group**: Synchronizing multiple goroutines and collecting their errors
 - [ ] **Select Pattern**: Coordinating multiple channels and handling timeouts
 
 # Pipeline
@@ -32,3 +31,10 @@ This pattern is particularly useful for CPU-intensive tasks that can benefit fro
 # Generator
 
 The Generator pattern has been utilized as a foundational component in several of the concurrency patterns we've implemented. It's a simple but powerful pattern that takes variadic input and returns a receive-only channel. A goroutine launched by the generator continuously sends values from the input to the channel, allowing other parts of the program to receive and process these values asynchronously. For implementation details, you can refer to the file: `generator/generator.go`
+
+# Error Group
+
+The Error Group pattern is a simple concurrency pattern that allows you to manage multiple goroutines and gather their errors. It uses the errgroup package, where a single error from any goroutine will cause `eg.Wait()` to return that error, signaling a failure. Wait blocks until all function calls from the Go method have returned, then returns the first non-nil error (if any) from them.
+
+For a full implementation, check the `errgroup/errgroup.go` file.
+
