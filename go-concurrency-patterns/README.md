@@ -5,10 +5,9 @@
 - [x] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
 - [x] **Generator Pattern**: Using channels to generate a sequence of values
 - [x] **Error Group**: Synchronizing multiple goroutines and collecting their errors
-- [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
-- [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
 - [ ] **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
-- [ ] **Select Pattern**: Coordinating multiple channels and handling timeouts
+- [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
+- [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 
 # Pipeline
 
