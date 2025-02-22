@@ -5,7 +5,8 @@ import (
 	// "go-concurrency-patterns/workerpools"
 	// "go-concurrency-patterns/faninfanout"
 	// "go-concurrency-patterns/generator"
-	"go-concurrency-patterns/errgroup"
+	// "go-concurrency-patterns/errgroup"
+	"go-concurrency-patterns/semaphore"
 )
 
 func main() {
@@ -13,5 +14,6 @@ func main() {
 	// workerpools.Run()
 	// faninfanout.Run()
 	// generator.Run()
-	errgroup.Run()
+	// errgroup.Run()
+	semaphore.Run()
 }

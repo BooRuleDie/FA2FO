@@ -37,3 +37,6 @@ The Error Group pattern is a simple concurrency pattern that allows you to manag
 
 For a full implementation, check the `errgroup/errgroup.go` file.
 
+# Semaphore
+
+This pattern is all about rate limiting with the help of a buffered channel. The logic is simple - all worker goroutines send a signal to a buffered channel before starting work and also receive from the same channel after they're completed. If the buffered channel is full, the send operation blocks so the goroutine stops until at least one other worker goroutine receives from the buffered channel. For the implementation, you can inspect the `semaphore/semaphore.go` file.
