@@ -6,7 +6,8 @@ import (
 	// "go-concurrency-patterns/faninfanout"
 	// "go-concurrency-patterns/generator"
 	// "go-concurrency-patterns/errgroup"
-	"go-concurrency-patterns/semaphore"
+	// "go-concurrency-patterns/semaphore"
+	"go-concurrency-patterns/mutex"
 )
 
 func main() {
@@ -15,5 +16,6 @@ func main() {
 	// faninfanout.Run()
 	// generator.Run()
 	// errgroup.Run()
-	semaphore.Run()
+	// semaphore.Run()
+	mutex.Run()
 }

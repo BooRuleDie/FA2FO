@@ -1,12 +1,12 @@
 ### Covered Concurrency Patterns
 
 - [x] **Worker Pools**: Distributing tasks across a fixed number of goroutines that process jobs from a shared queue
-- [x] **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next  
+- [x] **Pipeline**: Connecting stages where each stage performs part of the overall task and passes results to the next
 - [x] **Fan-out/Fan-in**: Distributing work across multiple goroutines and collecting results back into a single channel
 - [x] **Generator Pattern**: Using channels to generate a sequence of values
 - [x] **Error Group**: Synchronizing multiple goroutines and collecting their errors
-- [ ] **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
-- [ ] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
+- [x] **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
+- [x] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
 - [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 
 # Pipeline
@@ -17,13 +17,13 @@ The only exception to this flow is the first stage, also known as the producer o
 
 # Worker Pool
 
-They're very similar to thread pools. Essentially, you have a couple of goroutines that are always listening to specific channels, such as the jobs and results channels. They continuously consume from the jobs channel, process the data, and then send it to the results channel. The name of the pattern comes from the number of goroutines involved. 
+They're very similar to thread pools. Essentially, you have a couple of goroutines that are always listening to specific channels, such as the jobs and results channels. They continuously consume from the jobs channel, process the data, and then send it to the results channel. The name of the pattern comes from the number of goroutines involved.
 
 In this pattern, there are generally multiple goroutines listening to the same channel, which makes them resemble workers. For further details, you can inspect the implementation in this file: `workerpools/workerpools.go`.
 
 # Fan-in & Fan-out
 
-The Fan-in/Fan-out pattern is a powerful concurrency design that combines two complementary operations: distributing work across multiple goroutines (fan-out) and consolidating results back into a single channel (fan-in). In the fan-out phase, a single channel's data is distributed to multiple goroutines for parallel processing. The fan-in phase then merges the output from these multiple goroutines back into a single channel, effectively combining their results. 
+The Fan-in/Fan-out pattern is a powerful concurrency design that combines two complementary operations: distributing work across multiple goroutines (fan-out) and consolidating results back into a single channel (fan-in). In the fan-out phase, a single channel's data is distributed to multiple goroutines for parallel processing. The fan-in phase then merges the output from these multiple goroutines back into a single channel, effectively combining their results.
 
 This pattern is particularly useful for CPU-intensive tasks that can benefit from parallel processing, while maintaining ordered data flow through the system. Despite its simple concept, it's one of the most frequently used and effective concurrency patterns in Go. For a detailed implementation example, you can refer to the code in: `faninfanout/faninfanout.go`
 
@@ -40,3 +40,7 @@ For a full implementation, check the `errgroup/errgroup.go` file.
 # Semaphore
 
 This pattern is all about rate limiting with the help of a buffered channel. The logic is simple - all worker goroutines send a signal to a buffered channel before starting work and also receive from the same channel after they're completed. If the buffered channel is full, the send operation blocks so the goroutine stops until at least one other worker goroutine receives from the buffered channel. For the implementation, you can inspect the `semaphore/semaphore.go` file.
+
+# Mutex
+
+Mutexes are used to lock shared data among goroutines so it can be updated or read without triggering a race condition. In Go, it's mostly recommended to use channels for communication across goroutines; however, that doesn't mean you should always be using channels for communication. When it comes to simpler tasks like increasing a counter, mutexes can be more appropriate. You can inspect the `mutex/mutex.go` file for further details.
