@@ -7,7 +7,8 @@ import (
 	// "go-concurrency-patterns/generator"
 	// "go-concurrency-patterns/errgroup"
 	// "go-concurrency-patterns/semaphore"
-	"go-concurrency-patterns/mutex"
+	// "go-concurrency-patterns/mutex"
+	"go-concurrency-patterns/pubsub"
 )
 
 func main() {
@@ -17,5 +18,5 @@ func main() {
 	// generator.Run()
 	// errgroup.Run()
 	// semaphore.Run()
-	mutex.Run()
+	pubsub.Run()
 }

@@ -7,7 +7,7 @@
 - [x] **Error Group**: Synchronizing multiple goroutines and collecting their errors
 - [x] **Semaphore Pattern**: Limiting concurrent access to resources using buffered channels
 - [x] **Mutex and Read/Write Mutex**: Protecting shared resources from concurrent access
-- [ ] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
+- [x] **Pub/Sub**: Broadcasting messages to multiple subscribers through channels
 
 # Pipeline
 
@@ -44,3 +44,10 @@ This pattern is all about rate limiting with the help of a buffered channel. The
 # Mutex
 
 Mutexes are used to lock shared data among goroutines so it can be updated or read without triggering a race condition. In Go, it's mostly recommended to use channels for communication across goroutines; however, that doesn't mean you should always be using channels for communication. When it comes to simpler tasks like increasing a counter, mutexes can be more appropriate. You can inspect the `mutex/mutex.go` file for further details.
+
+# Pub / Sub
+
+This is the most complicated pattern among all those covered so far. You can think of it as a message broker implementation in Go. There is a publisher and a consumer, and the rest of the operations are the same as message brokers. The tricky part is the usage of `RWMutex` in the publisher. If you inspect the code, you can see that when there is a write operation *(such as adding/removing subscribers, modifying subscription lists, updating shared state, closing channels, deleting subscribers, or changing publisher status)* to any shared data, `mu.Lock()` & `mu.Unlock()` are used, and when there's only a read operation, `mu.RLock()` & `mu.RUnlock()` are used. We can explain it with the following example:
+
+* `mu.RLock()`: I'm going to do a read operation, so any other goroutine that accesses the same data as me shouldn't be able to write it until I'm finished; however, they can read the data.
+* `mu.Lock()`: I'm going to do a write operation, so in order to prevent race conditions and data inconsistencies, no other goroutine should be able to write or read the same data I'm currently accessing.
