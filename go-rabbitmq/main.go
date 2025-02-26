@@ -1,7 +1,11 @@
 package main
 
-import "go-rabbitmq/helloworld"
+import (
+	// "go-rabbitmq/helloworld"
+	"go-rabbitmq/workqueues"
+)
 
 func main() {
-	helloworld.Run()
+	// helloworld.Run()
+	workqueues.Run()
 }
