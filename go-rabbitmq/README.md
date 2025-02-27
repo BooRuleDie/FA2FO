@@ -70,3 +70,13 @@ ch.Qos(
 
 The configuration basically states that the maximum amount of unacknowledged messages you can send to a consumer is 1, which means RabbitMQ can't send more than one message unless the previous message it sent to the consumer is acknowledged. `prefetchSize` does the same thing but instead of counting the number of messages sent, it looks at the size of the messages. When you give 0, RabbitMQ ignores this value. And if there is more than one consumer per channel, the global parameter sets the configuration for all of them. In our example, there is just one consumer, so it's set to false.
 
+# Publish / Subscribe
+![Publish / Subscribe](./img/pub-sub.png)
+
+So far we've bound queues with consumers and publishers directly; however, this is not the case in most applications. Most of the time, the producer doesn't know which consumers are going to consume the message that's sent to the broker. It just sends messages to an Exchange and it's the Exchange's job to know how to route the messages to the right queues. If you inspect the `publisher.go` file, you can see that there is no queue declaration but only an Exchange declaration, and when publishing the messages, we've removed the old routing key which was a queue name and instead put an Exchange name there.
+
+There are multiple Exchange types like direct, topic, fanout... The fanout type is used here, which sends the same message to all bound queues.
+
+There are also some changes in the `consumer.go` file. In the queue definition, there is no name for the queue; this tells RabbitMQ to generate one for us. Also, the exclusive flag is set to true. Exclusive makes a queue private, which means only the current connection can access the queue, only one consumer can access the queue, and when the connection is closed, the queue will be removed *(even though there are messages inside)*. So it can be considered as a temporary private queue for the consumer.
+
+We've also declared the Exchange here, and after both Exchange and queue are declared, we bind them together so the Exchange knows which queues to send messages to. Auto-acknowledgment is enabled in this example.
