@@ -3,6 +3,9 @@ To interact with the system, use the following commands for publishing and consu
 ```bash
 make publish
 make consume
+
+make publish-direct info|warning|error "some logs here"
+make consume-direct info|warning|error|foo|bar...
 ```
 
 # Hello World
@@ -80,3 +83,49 @@ There are multiple Exchange types like direct, topic, fanout... The fanout type 
 There are also some changes in the `consumer.go` file. In the queue definition, there is no name for the queue; this tells RabbitMQ to generate one for us. Also, the exclusive flag is set to true. Exclusive makes a queue private, which means only the current connection can access the queue, only one consumer can access the queue, and when the connection is closed, the queue will be removed *(even though there are messages inside)*. So it can be considered as a temporary private queue for the consumer.
 
 We've also declared the Exchange here, and after both Exchange and queue are declared, we bind them together so the Exchange knows which queues to send messages to. Auto-acknowledgment is enabled in this example.
+
+# Routing
+![Routing](./img/routing.png)
+
+In this example, we explore the direct exchange type and sophisticated routing concepts. While the structure closely resembles the previous example, we've introduced a critical difference: when publishing messages, we explicitly specify a `routingKey` that corresponds to message severity (error, warning, info). On the consumer side, before listening on queues, we bind each consumer with one or more particular `routingKeys`. This binding instructs the exchange precisely which queue should receive each message based on its routing key. This selective message distribution allows consumers to process only the message types they're configured to handle, creating a more targeted and efficient messaging system.
+```go
+// publisher.go
+err = ch.PublishWithContext(
+		ctx,
+		exchangeName, // exchange
+		severity,     // routing key
+		false,        // mandatory
+		false,        // immediate
+		amqp.Publishing{
+			DeliveryMode: amqp.Persistent,
+			ContentType:  "text/plain",
+			Body:         []byte(logMessage),
+		},
+	)
+```
+
+```go
+// consumer.go
+sevs := getSeverities()
+	for _, sev := range sevs {
+		err = ch.QueueBind(
+			q.Name,       // queue name
+			sev,          // routing key
+			exchangeName, // exchange
+			false,
+			nil,
+		)
+		failOnError(err, "Failed to bind a queue")
+	}
+```
+
+```bash
+# start consumers
+make consume-direct error                   # consumer 1 only listens for errors
+make consume-direct info warning # consumer 2 listens for both warnings and info logs
+
+# publish
+make publish-direct info "some info log"
+make publish-direct error "some error log"
+make publish-direct warning "some warning log"
+```

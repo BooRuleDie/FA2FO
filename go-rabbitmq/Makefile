@@ -1,3 +1,6 @@
+install:
+	@go get github.com/rabbitmq/amqp091-go
+
 build:
 	@go build -o build/app
 
@@ -7,7 +10,18 @@ publish: build
 consume: build
 	@./build/app consume
 
-install:
-	@go get github.com/rabbitmq/amqp091-go
+publish-direct: build
+	@if [ -n "$(filter error info warning,$(word 2,$(MAKECMDGOALS)))" ]; then \
+		./build/app publish $(word 2,$(MAKECMDGOALS)) "$(wordlist 3,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"; \
+	else \
+		echo "ERROR: First argument must be error, info, or warning"; \
+		exit 1; \
+	fi
 
-.PHONY: build install publish consume
+consume-direct: build
+	@./build/app consume $(filter-out consume-direct build,$(MAKECMDGOALS))
+
+%:
+	@:
+
+.PHONY: build install publish consume publish-direct consume-direct
