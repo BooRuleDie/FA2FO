@@ -1,6 +1,6 @@
 # IAM (Identity and Access Management)
 
-<img src="../img/IAM.png" alt="IAM Icon" width="256" height="256"/>
+<img src="../img/IAM.png" alt="IAM Icon" width="128" height="128"/>
 
 As you can guess from the name, this service is all about authentication and authorization. There are 4 important topics in IAM:
 
