@@ -6,6 +6,9 @@ make consume
 
 make publish-direct info|warning|error "some logs here"
 make consume-direct info|warning|error|foo|bar...
+
+make publish-topic kern "some kernel error" # <facility> <log>
+make consume-topic kern.#|*.critical|*.error...
 ```
 
 # Hello World
@@ -129,3 +132,27 @@ make publish-direct info "some info log"
 make publish-direct error "some error log"
 make publish-direct warning "some warning log"
 ```
+
+# Topic
+![Topic](./img/topic.png)
+
+This example is very similar to the previous one; however, there's a slight difference which is the type of the exchange. The `topic` exchange is used in this example and it can be considered as an advanced direct exchange. In a direct exchange, you can just specify the routing key for publisher and binding key as string values; however, in a topic exchange, you can also specify wildcards. There are two types of wildcards that you can use:
+
+1. `#`: Which means zero or more words
+2. `*`: Which means any one word
+
+So if you set up the consumer and publisher with the following commands:
+```bash
+# consumer 1
+make consume-topic "\#.critical"
+
+# consumer 2
+make consume-topic "kern.\*" "*.error"
+
+# publisher
+make publish-topic kern.error "some error log"
+make publish-topic user.error "some error log"
+make publish-topic kern.critical "some error log"
+```
+
+The first two messages are consumed by consumer 2, but the last one is consumed by both consumers, thanks to the wildcards specified on the consumers.

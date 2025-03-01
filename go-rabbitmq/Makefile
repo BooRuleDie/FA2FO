@@ -20,8 +20,19 @@ publish-direct: build
 
 consume-direct: build
 	@./build/app consume $(filter-out consume-direct build,$(MAKECMDGOALS))
+	
+publish-topic: build
+	@if [ -n "$(filter kern.error user.error mail.error kern.critical user.critical mail.critical,$(word 2,$(MAKECMDGOALS)))" ]; then \
+		./build/app publish $(word 2,$(MAKECMDGOALS)) "$(wordlist 3,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))"; \
+	else \
+		echo "ERROR: First argument must be kern.error, user.error, mail.error, kern.critical, user.critical or mail.critical"; \
+		exit 1; \
+	fi
+
+consume-topic: build
+	@./build/app consume $(filter-out consume-topic build,$(MAKECMDGOALS))
 
 %:
 	@:
 
-.PHONY: build install publish consume publish-direct consume-direct
+.PHONY: build install publish consume publish-direct consume-direct publish-topic consume-topic
