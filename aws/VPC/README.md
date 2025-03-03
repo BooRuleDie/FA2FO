@@ -13,7 +13,7 @@ In the VPC, traffic is routed with the help of route tables. These route tables 
 NAT Gateways (Network Address Translation) play a crucial role in AWS VPC design by enabling resources in private subnets to initiate outbound connections to the internet while remaining inaccessible from the public internet. These managed AWS services provide a secure, highly available way for private resources to download updates, access external APIs, or connect to other AWS services without compromising the network's security posture. NAT Gateways are typically deployed in public subnets with routes from private subnets directing internet-bound traffic through them.
 
 Here's a diagram of the VPC in AWS:
-![VPC Diagram](../img/VPC-diagram.png)
+<img src="../img/VPC-diagram.png" alt="VPC Diagram" width="600"/>
 
 ### Security
 
