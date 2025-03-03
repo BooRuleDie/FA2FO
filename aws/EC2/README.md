@@ -35,7 +35,8 @@ For free tier eligible instance types, AWS allows you to use up to 750 hours per
 ## Regions & Availability Zones
 
 AWS can be thought of as an organization that has inter-connected data centers all over the world. When you use the EC2 service, you're essentially renting a virtual server within this huge network. Regions are basically the geographical locations where you want to place your EC2 instances. They look like this:
-![aws regions](../img/aws-regions.png)
+
+<img src="../img/aws-regions.png" alt="aws regions" width="150px"/>
 
 Availability Zones are distinct locations within regions that determine where your EC2 will be placed. They're called Availability Zones because you can deploy your instance across multiple zones, and if there's a problem in one zone, your duplicated services won't experience any availability issues. So your services will be isolated from failures in other Availability Zones.
 
