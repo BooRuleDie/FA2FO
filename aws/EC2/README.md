@@ -68,3 +68,5 @@ As you can see, there is an "Elastic" prefix in the name of the service. Not onl
 
 * After you get the private SSH key, store it somewhere safe and be sure that the permission of the file is strict enough.
 * Don't forget to update & upgrade packages after the first time you log into the EC2 instance
+* When connecting via SSH, use the OS-specific username. For example: `ssh -i ~/.ssh/aws-test.pem ubuntu@1.1.1.1`
+* By default, EC2 security groups only allow inbound traffic on Port 22 (SSH). To access web services from your browser, you'll need to add an inbound rule. For example, to access Jenkins UI, add a rule to "Allow inbound traffic for port 8080 from any IP address."
