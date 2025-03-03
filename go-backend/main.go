@@ -11,34 +11,25 @@ type application struct {
 	addr string
 }
 
-func (s *application) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		switch r.URL.Path {
-		case "/":
-			rw.Write([]byte("index page"))
-			return
-		case "/users":
-			rw.Write([]byte("users endpoint"))
-			return
-		default:
-			rw.Write([]byte("unknown path"))
-			return
-		}
-	default:
-		rw.Write([]byte("method not allowed"))
-		return
-	}
+func (s *application) getUsersHandler(rw http.ResponseWriter, r *http.Request) {
+	rw.Write([]byte("user data fetched!"))
+}
 
+func (s *application) createUsersHandler(rw http.ResponseWriter, r *http.Request) {
+	rw.Write([]byte("user created!"))
 }
 
 func main() {
 	app := &application{addr: appPort}
-	srv := &http.Server{
-		Addr: app.addr,
-		Handler: app,
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /users", app.getUsersHandler)
+	mux.HandleFunc("POST /users", app.createUsersHandler)
+
+	srv := http.Server{
+		Addr:    app.addr,
+		Handler: mux,
 	}
-	
 	log.Println("server started listening!")
 	log.Fatal(srv.ListenAndServe())
 }
