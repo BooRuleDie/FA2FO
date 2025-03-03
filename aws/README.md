@@ -6,4 +6,5 @@ This repository contains documentation, code samples, and guides for working wit
 
 - [IAM (Identity and Access Management)](IAM/README.md)
 - [EC2 (Elastic Compute Cloud)](EC2/README.md)
+- [VPC (Virtual Private Cloud)](VPC/README.md)
 
