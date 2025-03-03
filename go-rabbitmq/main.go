@@ -5,7 +5,8 @@ import (
 	// "go-rabbitmq/workqueues"
 	// "go-rabbitmq/pubsub"
 	// "go-rabbitmq/routing"
-	"go-rabbitmq/topic"
+	// "go-rabbitmq/topic"
+	"go-rabbitmq/rpc"
 	
 	
 )
@@ -15,5 +16,6 @@ func main() {
 	// workqueues.Run()
 	// pubsub.Run()
 	// routing.Run()
-	topic.Run()
+	// topic.Run()
+	rpc.Run()
 }

@@ -31,6 +31,12 @@ publish-topic: build
 
 consume-topic: build
 	@./build/app consume $(filter-out consume-topic build,$(MAKECMDGOALS))
+	
+rpc-client: build
+	@./build/app rpc-client $(filter-out rpc-client build,$(MAKECMDGOALS))
+	
+rpc-server: build
+	@./build/app rpc-server
 
 %:
 	@:
