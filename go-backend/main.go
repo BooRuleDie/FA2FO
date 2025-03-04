@@ -5,20 +5,6 @@ import (
 	"net/http"
 )
 
-const appPort = ":8080"
-
-type application struct {
-	addr string
-}
-
-func (s *application) getUsersHandler(rw http.ResponseWriter, r *http.Request) {
-	rw.Write([]byte("user data fetched!"))
-}
-
-func (s *application) createUsersHandler(rw http.ResponseWriter, r *http.Request) {
-	rw.Write([]byte("user created!"))
-}
-
 func main() {
 	app := &application{addr: appPort}
 
