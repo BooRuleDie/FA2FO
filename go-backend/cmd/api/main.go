@@ -7,6 +7,8 @@ import (
 	"log"
 )
 
+const version = "0.0.1"
+
 func main() {
 	cfg := config{
 		addr: env.MustGetString("ADDR"),
@@ -16,6 +18,7 @@ func main() {
 			maxIdleConns: env.MustGetInt("DB_MAX_IDLE_CONNS"),
 			maxIdleTime:  env.MustGetString("DB_MAX_IDLE_TIME"),
 		},
+		env: env.MustGetString("ENV"),
 	}
 	
 	// setup the database
