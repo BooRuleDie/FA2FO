@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"database/sql"
-	"time"
 )
 
 // User Model, could be in a
@@ -13,9 +12,9 @@ type User struct {
 	Username  string         `json:"username"`
 	Email     string         `json:"email"`
 	// password field is excluded from JSON marshaling with `json:"-"`
-	Password  string         `json:"-"` 
-	CreatedAt time.Duration  `json:"created_at"`
-	UpdatedAt time.Duration  `json:"updated_at"`
+	Password  string         `json:"-"`
+	CreatedAt string  `json:"created_at"`
+	UpdatedAt string  `json:"updated_at"`
 }
 
 type usersRepository interface {
@@ -39,20 +38,20 @@ func (us *pqUsers) Create(ctx context.Context, user *User) error {
 		INSERT INTO Users(username, password, email)
 		VALUES($1, $2, $3) RETURNING id, created_at, updated_at
 	`
-	
+
 	err := us.db.QueryRowContext(
-		ctx, 
-		query, 
-		user.Username, 
+		ctx,
+		query,
+		user.Username,
 		// should be hashed before inserting
 		// or let database handle the hashing
-		user.Password, 
+		user.Password,
 		user.Email,
 	).Scan(
-		&user.ID, 
-		&user.CreatedAt, 
+		&user.ID,
+		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
-	
+
 	return err
 }

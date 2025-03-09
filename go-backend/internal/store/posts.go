@@ -3,7 +3,6 @@ package store
 import (
 	"context"
 	"database/sql"
-	"time"
 
 	"github.com/lib/pq"
 )
@@ -11,13 +10,13 @@ import (
 // Post Model, you can put it into a seperate
 // package as well
 type Post struct {
-	ID        int64         `json:"id"`
-	Title     string        `json:"title"`
-	Content   string        `json:"content"`
-	UserID    int64         `json:"user_id"`
-	Tags      []string      `json:"tags"`
-	CreatedAt time.Duration `json:"created_at"`
-	UpdatedAt time.Duration `json:"updated_at"`
+	ID        int64    `json:"id"`
+	Title     string   `json:"title"`
+	Content   string   `json:"content"`
+	UserID    int64    `json:"user_id"`
+	Tags      []string `json:"tags"`
+	CreatedAt string   `json:"created_at"`
+	UpdatedAt string   `json:"updated_at"`
 }
 
 type postsRepository interface {
