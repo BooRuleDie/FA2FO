@@ -6,12 +6,15 @@ import (
 )
 
 func writeJSON(w http.ResponseWriter, status int, data any) error {
+	// According to the HTTP protocol, status code must be
+	// specified before writing to the body. If not explicitly set,
+	// a default status of 200 OK will be applied automatically.
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		return err
 	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(status)
 
 	return nil
 }

@@ -3,9 +3,12 @@ package store
 import (
 	"context"
 	"database/sql"
+	"errors"
 
 	"github.com/lib/pq"
 )
+
+var ErrNotFound = errors.New("not found")
 
 // Post Model, you can put it into a seperate
 // package as well
@@ -21,6 +24,7 @@ type Post struct {
 
 type postsRepository interface {
 	Create(context.Context, *Post) error
+	GetByID(context.Context, int64) (*Post, error)
 }
 
 // postgreSQL Posts struct that'll satisfy
@@ -55,4 +59,43 @@ func (ps *pqPosts) Create(ctx context.Context, post *Post) error {
 	)
 
 	return err
+}
+
+func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
+	query := `
+		SELECT
+			p.id,
+			p.title,
+			p.content,
+			p.user_id,
+			p.tags,
+			p.created_at,
+			p.updated_at
+		FROM posts p
+		WHERE p.id = $1;
+	`
+	var post Post
+	err := ps.db.QueryRowContext(
+		ctx,
+		query,
+		postID,
+	).Scan(
+		&post.ID,
+		&post.Title,
+		&post.Content,
+		&post.UserID,
+		pq.Array(&post.Tags),
+		&post.CreatedAt,
+		&post.UpdatedAt,
+	)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &post, nil
 }

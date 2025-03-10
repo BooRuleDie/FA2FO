@@ -1,8 +1,12 @@
 package main
 
 import (
+	"errors"
 	"go-backend/internal/store"
 	"net/http"
+	"strconv"
+
+	"github.com/go-chi/chi/v5"
 )
 
 type CreatePostPayload struct {
@@ -36,6 +40,35 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 
 	res := CreatePostResponse{ID: newPost.ID}
 	if err := writeJSON(w, http.StatusCreated, res); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+}
+
+func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "postID")
+	postID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		// you probably don't want to return those
+		// errors in production, as it can give so much
+		// clue to the hackers
+		writeJSONError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	post, err := app.store.Posts.GetByID(r.Context(), postID)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			writeJSONError(w, http.StatusNotFound, store.ErrNotFound.Error())
+			return
+		default:
+			writeJSONError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
+	}
+
+	if err = writeJSON(w, http.StatusOK, post); err != nil {
 		writeJSONError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
