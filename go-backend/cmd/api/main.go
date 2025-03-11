@@ -5,9 +5,21 @@ import (
 	"go-backend/internal/env"
 	"go-backend/internal/store"
 	"log"
+
+	"github.com/go-playground/validator/v10"
 )
 
 const version = "0.0.1"
+
+var Validate *validator.Validate
+
+func init() {
+	// This setting is pretty useful as it ensures
+	// nil struct pointers will still undergo validation
+	// Without this setting, nil struct pointers would
+	// bypass data validation which can cause critical bugs
+	Validate = validator.New(validator.WithRequiredStructEnabled())
+}
 
 func main() {
 	cfg := config{
@@ -20,12 +32,12 @@ func main() {
 		},
 		env: env.MustGetString("ENV"),
 	}
-	
+
 	// setup the database
 	db, err := db.New(
-		cfg.db.addr, 
-		cfg.db.maxIdleTime, 
-		cfg.db.maxOpenConns, 
+		cfg.db.addr,
+		cfg.db.maxIdleTime,
+		cfg.db.maxOpenConns,
 		cfg.db.maxIdleConns,
 	)
 	if err != nil {
