@@ -74,6 +74,7 @@ func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
 		FROM posts p
 		WHERE p.id = $1;
 	`
+	
 	var post Post
 	err := ps.db.QueryRowContext(
 		ctx,
