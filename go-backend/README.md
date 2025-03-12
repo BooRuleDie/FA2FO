@@ -74,3 +74,52 @@ row := db.QueryRow("SELECT id, name FROM users WHERE id = $1", id)
 var user User
 err = row.Scan(&user.ID, &user.Name)
 ```
+
+Group By Behavior: PostgreSQL vs MySQL
+
+PostgreSQL strictly follows the SQL standard for GROUP BY operations. When using GROUP BY, you must:
+* Include ALL non-aggregated columns that appear in the SELECT clause in the GROUP BY clause
+* Or use aggregate functions (COUNT, SUM, json_agg, etc.) for columns not in GROUP BY
+
+```sql
+-- PostgreSQL: This will NOT work
+SELECT
+    p.id,
+    p.title,      -- Error: must be in GROUP BY
+    p.content,    -- Error: must be in GROUP BY
+    json_agg(c.*) as comments
+FROM posts p
+LEFT JOIN comments c ON c.post_id = p.id
+GROUP BY p.id;
+
+-- PostgreSQL: This will work
+SELECT
+    p.id,
+    p.title,
+    p.content,
+    json_agg(c.*) as comments
+FROM posts p
+LEFT JOIN comments c ON c.post_id = p.id
+GROUP BY p.id, p.title, p.content;
+```
+
+MySQL is more lenient with GROUP BY operations by default. It will:
+* Allow columns in SELECT that are not in GROUP BY
+* Automatically select a value (usually the first one it finds) for non-grouped columns
+
+```sql
+-- MySQL: This will work
+SELECT
+    p.id,
+    p.title,      -- MySQL picks a value
+    p.content,    -- MySQL picks a value
+    JSON_ARRAYAGG(
+        JSON_OBJECT(
+            'id', c.id,
+            'content', c.content
+        )
+    ) as comments
+FROM posts p
+LEFT JOIN comments c ON c.post_id = p.id
+GROUP BY p.id;
+```
