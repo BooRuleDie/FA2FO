@@ -53,34 +53,17 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 }
 
+
+
 func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
-	idParam := chi.URLParam(r, "postID")
-	postID, err := strconv.ParseInt(idParam, 10, 64)
-	if err != nil {
-		// you probably don't want to return those
-		// errors in production, as it can give so much
-		// clue to the hackers
-		// writeJSONError(w, http.StatusInternalServerError, err.Error())
-		app.internalServerError(w, r, err)
+	post := postFromContext(r.Context())
+	if post == nil {
+		app.internalServerError(w, r, errors.New("failed to fetch post from middleware"))
 		return
 	}
 
-	post, err := app.store.Posts.GetByID(r.Context(), postID)
-	if err != nil {
-		switch {
-		case errors.Is(err, store.ErrNotFound):
-			// writeJSONError(w, http.StatusNotFound, store.ErrNotFound.Error())
-			app.notFound(w, r, err)
-			return
-		default:
-			// writeJSONError(w, http.StatusInternalServerError, err.Error())
-			app.internalServerError(w, r, err)
-			return
-		}
-	}
-	
 	// get comments
-	comments, err := app.store.Comments.GetByPostID(r.Context(), postID)
+	comments, err := app.store.Comments.GetByPostID(r.Context(), post.ID)
 	if err != nil {
 		app.internalServerError(w, r, err)
 		return
@@ -92,4 +75,89 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 		app.internalServerError(w, r, err)
 		return
 	}
+}
+
+type UpdatePostPayload struct {
+	Title   string   `json:"title" validate:"required,max=100"`
+	Content string   `json:"content" validate:"required,max=1000"`
+	Tags    []string `json:"tags" validate:"required"`
+}
+
+func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "postID")
+	postID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	// updatePostPayload
+	var upp UpdatePostPayload
+	if err := readJSON(w, r, &upp); err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	if err := Validate.Struct(upp); err != nil {
+		app.badRequest(w, r, err)
+		return
+	}
+
+	updatedPost := &store.Post{
+		ID:      postID,
+		Title:   upp.Title,
+		Content: upp.Content,
+		Tags:    upp.Tags,
+
+		// TODO: after auth is implemented
+		// change this hardcoded user_id with
+		// the actual user_id
+		UserID: 1,
+	}
+
+	err = app.store.Posts.Update(r.Context(), updatedPost)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFound(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
+	idParam := chi.URLParam(r, "postID")
+	postID, err := strconv.ParseInt(idParam, 10, 64)
+	if err != nil {
+		app.internalServerError(w, r, err)
+		return
+	}
+
+	deletedPost := &store.Post{
+		ID: postID,
+
+		// TODO: after auth is implemented
+		// change this hardcoded user_id with
+		// the actual user_id
+		UserID: 1,
+	}
+
+	err = app.store.Posts.Delete(r.Context(), deletedPost)
+	if err != nil {
+		switch {
+		case errors.Is(err, store.ErrNotFound):
+			app.notFound(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }

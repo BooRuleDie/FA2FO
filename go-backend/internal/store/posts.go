@@ -13,19 +13,21 @@ var ErrNotFound = errors.New("not found")
 // Post Model, you can put it into a seperate
 // package as well
 type Post struct {
-	ID        int64    `json:"id"`
-	Title     string   `json:"title"`
-	Content   string   `json:"content"`
-	UserID    int64    `json:"user_id"`
-	Tags      []string `json:"tags"`
-	CreatedAt string   `json:"created_at"`
-	UpdatedAt string   `json:"updated_at"`
-	Comments []Comment `json:"comments"`
+	ID        int64     `json:"id"`
+	Title     string    `json:"title"`
+	Content   string    `json:"content"`
+	UserID    int64     `json:"user_id"`
+	Tags      []string  `json:"tags"`
+	CreatedAt string    `json:"created_at"`
+	UpdatedAt string    `json:"updated_at"`
+	Comments  []Comment `json:"comments"`
 }
 
 type postsRepository interface {
 	Create(context.Context, *Post) error
 	GetByID(context.Context, int64) (*Post, error)
+	Update(context.Context, *Post) error
+	Delete(context.Context, *Post) error
 }
 
 // postgreSQL Posts struct that'll satisfy
@@ -75,7 +77,7 @@ func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
 		FROM posts p
 		WHERE p.id = $1;
 	`
-	
+
 	var post Post
 	err := ps.db.QueryRowContext(
 		ctx,
@@ -100,4 +102,66 @@ func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
 	}
 
 	return &post, nil
+}
+
+func (ps *pqPosts) Delete(ctx context.Context, post *Post) error {
+	query := `
+		DELETE FROM posts p WHERE p.id = $1 AND p.user_id = $2;
+	`
+
+	res, err := ps.db.ExecContext(
+		ctx,
+		query,
+		post.ID,
+		post.UserID,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func (ps *pqPosts) Update(ctx context.Context, post *Post) error {
+	query := `
+		UPDATE posts p
+		SET
+			title = $1,
+			"content" = $2,
+			tags = $3
+		WHERE
+			id = $4 AND
+			user_id = $5;
+	`
+
+	res, err := ps.db.ExecContext(
+		ctx,
+		query,
+		post.Title,
+		post.Content,
+		pq.Array(post.Tags),
+		post.ID,
+		post.UserID,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
