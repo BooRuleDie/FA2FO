@@ -11,7 +11,7 @@ func writeJSON(w http.ResponseWriter, status int, data any) error {
 	// a default status of 200 OK will be applied automatically.
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	
+
 	if err := json.NewEncoder(w).Encode(data); err != nil {
 		return err
 	}
@@ -38,4 +38,21 @@ type JSONError struct {
 func writeJSONError(w http.ResponseWriter, status int, message string) error {
 	env := &JSONError{Error: message}
 	return writeJSON(w, status, env)
+}
+
+func (app *application) jsonResponse(w http.ResponseWriter, status int, data any) error {
+	type envelope struct {
+		Data any `json:"data"`
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+
+	res := envelope{Data: data}
+
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		return err
+	}
+
+	return nil
 }

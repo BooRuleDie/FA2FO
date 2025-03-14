@@ -22,7 +22,7 @@ type CreatePostResponse struct {
 func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request) {
 	var post CreatePostPayload
 	if err := readJSON(w, r, &post); err != nil {
-		// writeJSONError(w, http.StatusBadRequest, err.Error())
+		// app.jsonResponseError(w, http.StatusBadRequest, err.Error())
 		app.badRequest(w, r, err)
 		return
 	}
@@ -40,14 +40,14 @@ func (app *application) createPostHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	if err := app.store.Posts.Create(r.Context(), newPost); err != nil {
-		// writeJSONError(w, http.StatusInternalServerError, err.Error())
+		// app.jsonResponseError(w, http.StatusInternalServerError, err.Error())
 		app.internalServerError(w, r, err)
 		return
 	}
 
 	res := CreatePostResponse{ID: newPost.ID}
-	if err := writeJSON(w, http.StatusCreated, res); err != nil {
-		// writeJSONError(w, http.StatusInternalServerError, err.Error())
+	if err := app.jsonResponse(w, http.StatusCreated, res); err != nil {
+		// app.jsonResponseError(w, http.StatusInternalServerError, err.Error())
 		app.internalServerError(w, r, err)
 		return
 	}
@@ -70,8 +70,8 @@ func (app *application) getPostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	post.Comments = comments
 
-	if err = writeJSON(w, http.StatusOK, post); err != nil {
-		// writeJSONError(w, http.StatusInternalServerError, err.Error())
+	if err = app.jsonResponse(w, http.StatusOK, post); err != nil {
+		// app.jsonResponseError(w, http.StatusInternalServerError, err.Error())
 		app.internalServerError(w, r, err)
 		return
 	}
