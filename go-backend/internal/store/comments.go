@@ -16,6 +16,7 @@ type Comment struct {
 
 type commentsRepository interface {
 	GetByPostID(context.Context, int64) ([]Comment, error)
+	Create(context.Context, *Comment) error
 }
 
 type pqComments struct {
@@ -45,7 +46,7 @@ func (cs *pqComments) GetByPostID(ctx context.Context, postID int64) ([]Comment,
 	JOIN users u ON u.id = c.user_id
 	WHERE c.post_id = $1;
 	`
-	
+
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
@@ -81,4 +82,34 @@ func (cs *pqComments) GetByPostID(ctx context.Context, postID int64) ([]Comment,
 	}
 
 	return comments, nil
+}
+
+func (cs *pqComments) Create(ctx context.Context, comment *Comment) error {
+	query := `
+		INSERT INTO "comments"(post_id, user_id, "content") VALUES($1, $2, $3);
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	res, err := cs.db.ExecContext(
+		ctx,
+		query,
+		comment.PostID,
+		comment.UserID,
+		comment.Content,
+	)
+	if err != nil {
+		return err
+	}
+	
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return ErrNotFound
+	}
+	
+	return nil
 }
