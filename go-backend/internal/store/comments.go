@@ -45,6 +45,9 @@ func (cs *pqComments) GetByPostID(ctx context.Context, postID int64) ([]Comment,
 	JOIN users u ON u.id = c.user_id
 	WHERE c.post_id = $1;
 	`
+	
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	rows, err := cs.db.QueryContext(
 		ctx,

@@ -8,8 +8,6 @@ import (
 	"github.com/lib/pq"
 )
 
-var ErrNotFound = errors.New("not found")
-
 // Post Model, you can put it into a seperate
 // package as well
 type Post struct {
@@ -47,6 +45,9 @@ func (ps *pqPosts) Create(ctx context.Context, post *Post) error {
 		INSERT INTO posts(content, title, user_id, tags)
 		VALUES ($1, $2, $3, $4) RETURNING id, created_at, updated_at
 	`
+	
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	err := ps.db.QueryRowContext(
 		ctx,
@@ -77,6 +78,9 @@ func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
 		FROM posts p
 		WHERE p.id = $1;
 	`
+	
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	var post Post
 	err := ps.db.QueryRowContext(
@@ -108,6 +112,9 @@ func (ps *pqPosts) Delete(ctx context.Context, post *Post) error {
 	query := `
 		DELETE FROM posts p WHERE p.id = $1 AND p.user_id = $2;
 	`
+	
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	res, err := ps.db.ExecContext(
 		ctx,
@@ -141,6 +148,9 @@ func (ps *pqPosts) Update(ctx context.Context, post *Post) error {
 			id = $4 AND
 			user_id = $5;
 	`
+	
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
 
 	res, err := ps.db.ExecContext(
 		ctx,
