@@ -3,12 +3,17 @@ package store
 import (
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type FeedPagination struct {
-	Limit  int    `json:"limit" validate:"required,gte=1,lte=20"`
-	Offset int    `json:"offset" validate:"gte=0"`
-	Sort   string `json:"sort" validate:"oneof=ASC DESC"`
+	Limit  int      `json:"limit" validate:"required,gte=1,lte=20"`
+	Offset int      `json:"offset" validate:"gte=0"`
+	Sort   string   `json:"sort" validate:"oneof=ASC DESC"`
+	
+	// searh will be searched inside both post title and content
+	Search string   `json:"search" validate:"max=100"`
+	Tags   []string `json:"tags" validate:"max=5"`
 }
 
 func FeedPaginationParse(r *http.Request) (*FeedPagination, error) {
@@ -16,6 +21,8 @@ func FeedPaginationParse(r *http.Request) (*FeedPagination, error) {
 		limitKey  = "limit"
 		offsetKey = "offset"
 		sortKey   = "sort"
+		searchKey = "search"
+		tagsKey   = "tags"
 	)
 
 	var fp FeedPagination
@@ -54,6 +61,19 @@ func FeedPaginationParse(r *http.Request) (*FeedPagination, error) {
 	} else {
 		fp.Sort = sort
 	}
+	
+	// set search
+	search := qs.Get(searchKey)
+	if search != "" {
+		fp.Search = search
+	} 
+	
+	// set tags
+	tags := qs.Get(tagsKey)
+	if tags != "" {
+		tagsSlice := strings.Split(tags, ",")
+		fp.Tags = tagsSlice 
+	}  
 
 	return &fp, nil
 }

@@ -206,11 +206,17 @@ func (ps *pqPosts) Feed(ctx context.Context, userID int64, fp *FeedPagination) (
 		JOIN followers f ON f.user_id = p.user_id OR p.user_id = $1
 		LEFT JOIN "comments" c ON c.post_id = p.id
 		WHERE
-			f.follower_id = $1 OR
-			p.user_id = $1
+			f.follower_id = $1 AND
+			(
+				p.title ILIKE '%' || $2 || '%' OR 
+				p.content ILIKE '%' || $2 || '%'
+			) AND
+			(
+				ARRAY_LENGTH($3::text[], 1) IS NULL OR p.tags @> $3
+			)
 		GROUP BY p.id, u.username
 		ORDER BY p.id ` + fp.Sort + `
-		LIMIT $2 OFFSET $3
+		LIMIT $4 OFFSET $5;
 		`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -220,6 +226,8 @@ func (ps *pqPosts) Feed(ctx context.Context, userID int64, fp *FeedPagination) (
 		ctx,
 		query,
 		userID,
+		fp.Search,
+		pq.Array(fp.Tags),
 		fp.Limit,
 		fp.Offset,
 	)
