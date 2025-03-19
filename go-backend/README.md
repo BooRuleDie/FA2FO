@@ -75,7 +75,7 @@ var user User
 err = row.Scan(&user.ID, &user.Name)
 ```
 
-Group By Behavior: PostgreSQL vs MySQL
+### Group By Behavior: PostgreSQL vs MySQL
 
 PostgreSQL strictly follows the SQL standard for GROUP BY operations. When using GROUP BY, you must:
 * Include ALL non-aggregated columns that appear in the SELECT clause in the GROUP BY clause
@@ -123,3 +123,13 @@ FROM posts p
 LEFT JOIN comments c ON c.post_id = p.id
 GROUP BY p.id;
 ```
+
+### PostgreSQL Index Types
+
+| Field Type | Best Index Type | Common Query Patterns |
+|------------|----------------|---------------------|
+| Integer (e.g., id, price, age) | B-Tree | `=`, `<`, `>`, `BETWEEN`, `ORDER BY` |
+| Text (e.g., name, description) | B-Tree (exact match)<br>GiST (trigram) | `=`, `LIKE 'abc%'`<br>`ILIKE '%abc%'` |
+| Full-Text Search (e.g., bio, content) | GIN (tsvector) | `@@`, `to_tsquery()` |
+| Arrays (e.g., text[]) | GIN | `@>`, `&&`, `<@` |
+| JSONB | GIN (jsonb)<br>GIN (jsonb_path_ops) | `@>`, `?`, `?&`, `?|`<br>JSON path operators |

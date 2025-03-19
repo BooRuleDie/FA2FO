@@ -4,9 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+
+	"github.com/lib/pq"
 )
 
-var ErrInvalidUserID = errors.New("invalid userID")
+var (
+	ErrInvalidUserID    = errors.New("invalid userID")
+	ErrAlreadyFollowing = errors.New("already following this user")
+)
 
 // User Model, could be in a
 // seperate package
@@ -23,6 +28,10 @@ type User struct {
 type usersRepository interface {
 	Create(context.Context, *User) error
 	GetByID(context.Context, int64) (*User, error)
+
+	// userID, followerID
+	Follow(context.Context, int64, int64) error
+	Unfollow(context.Context, int64, int64) error
 }
 
 // postgreSQL Users struct that'll satisfy
@@ -100,4 +109,46 @@ func (us *pqUsers) GetByID(ctx context.Context, userID int64) (*User, error) {
 	}
 
 	return &user, nil
+}
+
+func (us *pqUsers) Follow(ctx context.Context, userID int64, followerID int64) error {
+	query := `
+		INSERT INTO followers (user_id, follower_id) VALUES ($1, $2);
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := us.db.ExecContext(
+		ctx,
+		query,
+		userID,
+		followerID,
+	)
+
+	// handle follow conflicts
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok && pqErr.Code == "23505" {
+			return ErrAlreadyFollowing
+		}
+		return err
+	}
+
+	return nil
+}
+
+func (us *pqUsers) Unfollow(ctx context.Context, userID int64, followerID int64) error {
+	query := `
+		DELETE FROM followers WHERE user_id = $1 AND follower_id = $2;
+	`
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := us.db.ExecContext(
+		ctx,
+		query,
+		userID,
+		followerID,
+	)
+
+	return err
 }
