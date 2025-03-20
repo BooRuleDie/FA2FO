@@ -9,7 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-const version = "0.0.1"
+const version = "0.0.2"
 
 var Validate *validator.Validate
 
@@ -21,6 +21,24 @@ func init() {
 	Validate = validator.New(validator.WithRequiredStructEnabled())
 }
 
+//	@title			GopherSocial API
+//	@description	API for GopherSocial, a social network for gohpers
+//	@termsOfService	http://swagger.io/terms/
+
+//	@contact.name	API Support
+//	@contact.url	http://www. swagger.io/support
+//	@contact.email	support@swagger.io
+
+//	@license.name	Apache 2.0
+//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
+
+//	@BasePath					/v1
+//
+//	@securityDefinitions.apikey	ApiKeyAuth
+//	@in							header
+//	@name						Authorization
+//	@description
+
 func main() {
 	cfg := config{
 		addr: env.MustGetString("ADDR"),
@@ -31,6 +49,10 @@ func main() {
 			maxIdleTime:  env.MustGetString("DB_MAX_IDLE_TIME"),
 		},
 		env: env.MustGetString("ENV"),
+		swagger: swaggerConfig{
+			host:    env.MustGetString("SWAGGER_HOST"),
+			jsonURL: env.MustGetString("SWAGGER_JSON_URL"),
+		},
 	}
 
 	// setup the database
