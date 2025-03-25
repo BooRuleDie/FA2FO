@@ -4,9 +4,9 @@ import (
 	"go-backend/internal/db"
 	"go-backend/internal/env"
 	"go-backend/internal/store"
-	"log"
 
 	"github.com/go-playground/validator/v10"
+	"go.uber.org/zap"
 )
 
 const version = "0.0.2"
@@ -54,6 +54,12 @@ func main() {
 			jsonURL: env.MustGetString("SWAGGER_JSON_URL"),
 		},
 	}
+	// logger
+	prodConfig := zap.NewProductionConfig()
+	prodConfig.DisableStacktrace = true
+	zapLogger, _ := prodConfig.Build()
+	logger := zapLogger.Sugar()
+	defer logger.Sync() // flushes buffer, if any
 
 	// setup the database
 	db, err := db.New(
@@ -63,7 +69,7 @@ func main() {
 		cfg.db.maxIdleConns,
 	)
 	if err != nil {
-		panic(err)
+		logger.Fatal(err)
 	}
 	defer db.Close()
 
@@ -72,7 +78,8 @@ func main() {
 	app := &application{
 		config: cfg,
 		store:  store,
+		logger: logger,
 	}
 
-	log.Fatal(app.run())
+	logger.Fatal(app.run())
 }

@@ -3,18 +3,21 @@ package main
 import (
 	"go-backend/docs"
 	"go-backend/internal/store"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
+	"go.uber.org/zap"
 )
 
 type application struct {
 	config config
 	store  store.Storage
+	// it'd be better to implement it as an interface
+	// instead of a concrete implementation for better testability
+	logger *zap.SugaredLogger
 }
 
 type config struct {
@@ -93,6 +96,7 @@ func (app *application) run() error {
 		IdleTimeout:  time.Minute,
 	}
 
-	log.Printf("server started at %s !\n", app.config.addr)
+	app.logger.Infow("server has started", "addr", app.config.addr, "env", app.config.env)
+
 	return srv.ListenAndServe()
 }
