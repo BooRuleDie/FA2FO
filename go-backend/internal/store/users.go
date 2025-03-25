@@ -4,13 +4,17 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/lib/pq"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var (
-	ErrInvalidUserID    = errors.New("invalid userID")
-	ErrAlreadyFollowing = errors.New("already following this user")
+	ErrInvalidUserID     = errors.New("invalid userID")
+	ErrAlreadyFollowing  = errors.New("already following this user")
+	ErrDuplicateEmail    = errors.New("email address already exists")
+	ErrDuplicateUsername = errors.New("username already exists")
 )
 
 // User Model, could be in a
@@ -20,18 +24,38 @@ type User struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	// password field is excluded from JSON marshaling with `json:"-"`
-	Password  string `json:"-"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	Password  password `json:"-"`
+	CreatedAt string   `json:"created_at"`
+	UpdatedAt string   `json:"updated_at"`
+}
+
+type password struct {
+	text *string
+	hash []byte
+}
+
+func (p *password) Set(text string) error {
+	hash, err := bcrypt.GenerateFromPassword([]byte(text), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	p.text = &text
+	p.hash = hash
+
+	return nil
 }
 
 type usersRepository interface {
-	Create(context.Context, *User) error
+	Create(context.Context, *sql.Tx, *User) error
 	GetByID(context.Context, int64) (*User, error)
 
 	// userID, followerID
 	Follow(context.Context, int64, int64) error
 	Unfollow(context.Context, int64, int64) error
+
+	// auth
+	CreateAndInvite(context.Context, *User, string, time.Duration) error
 }
 
 // postgreSQL Users struct that'll satisfy
@@ -46,7 +70,7 @@ func newUsersRepo(db *sql.DB) *pqUsers {
 	}
 }
 
-func (us *pqUsers) Create(ctx context.Context, user *User) error {
+func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
 		INSERT INTO Users(username, password, email)
 		VALUES($1, $2, $3) RETURNING id, created_at, updated_at
@@ -68,8 +92,18 @@ func (us *pqUsers) Create(ctx context.Context, user *User) error {
 		&user.CreatedAt,
 		&user.UpdatedAt,
 	)
+	if err != nil {
+		switch {
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_email_key"`:
+			return ErrDuplicateEmail
+		case err.Error() == `pq: duplicate key value violates unique constraint "users_username_key"`:
+			return ErrDuplicateUsername
+		default:
+			return err
+		}
+	}
 
-	return err
+	return nil
 }
 
 func (us *pqUsers) GetByID(ctx context.Context, userID int64) (*User, error) {
@@ -151,4 +185,36 @@ func (us *pqUsers) Unfollow(ctx context.Context, userID int64, followerID int64)
 	)
 
 	return err
+}
+
+func (us *pqUsers) CreateAndInvite(ctx context.Context, user *User, token string, invitationExp time.Duration) error {
+	return withTx(us.db, ctx, func(tx *sql.Tx) error {
+		// create the user
+		if err := us.Create(ctx, tx, user); err != nil {
+			return err
+		}
+
+		// create the invitation
+		if err := us.createUserInvitation(ctx, tx, token, invitationExp, user.ID); err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (us *pqUsers) createUserInvitation(ctx context.Context, tx *sql.Tx, token string, invitationExp time.Duration, userID int64) error {
+	query := `
+		INSERT INTO user_invitations (token, user_id, expiry) VALUES($1, $2, $3);
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, token, userID, time.Now().Add(invitationExp))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -132,6 +132,12 @@ info:
   termsOfService: http://swagger.io/terms/
   title: GopherSocial API
 paths:
+  /authentication/user:
+    post:
+      responses:
+        "500":
+          description: Internal Server Error
+          schema: {}
   /posts:
     post:
       consumes:

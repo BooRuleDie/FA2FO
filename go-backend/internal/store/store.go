@@ -1,6 +1,7 @@
 package store
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"time"
@@ -27,4 +28,20 @@ func NewPostgreSQLStorage(db *sql.DB) Storage {
 		Posts:    posts,
 		Comments: comments,
 	}
+}
+
+func withTx(db *sql.DB, ctx context.Context, fn func(*sql.Tx) error) error {
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+
+	if err := fn(tx); err != nil {
+		if rbErr := tx.Rollback(); rbErr != nil {
+			return errors.New("transaction error: " + err.Error() + ", rollback error: " + rbErr.Error())
+		}
+		return err
+	}
+
+	return tx.Commit()
 }

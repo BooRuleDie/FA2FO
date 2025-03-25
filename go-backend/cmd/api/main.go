@@ -4,6 +4,7 @@ import (
 	"go-backend/internal/db"
 	"go-backend/internal/env"
 	"go-backend/internal/store"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"go.uber.org/zap"
@@ -52,6 +53,9 @@ func main() {
 		swagger: swaggerConfig{
 			host:    env.MustGetString("SWAGGER_HOST"),
 			jsonURL: env.MustGetString("SWAGGER_JSON_URL"),
+		},
+		mail: mailConfig{
+			exp: time.Hour * 24 * 3, // 3 days
 		},
 	}
 	// logger
