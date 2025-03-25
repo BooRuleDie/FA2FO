@@ -4,14 +4,29 @@ import (
 	"net/http"
 )
 
+type status struct {
+	Status  string `json:"status"`
+	Env     string `json:"env"`
+	Version string `json:"version"`
+}
+
+// HealthCheck godoc
+//
+//	@Summary		Health check endpoint
+//	@Description	Returns the status of the API service
+//	@Produce		json
+//	@Success		200	{object}	status	"Returns service status information"
+//	@Failure		500	{string}	string
+//	@Router			/v1/health [get]
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
-	data := map[string]string{
-		"status": "ok",
-		"env": app.config.env,
-		"version": version,
+
+	s := status{
+		"ok",
+		app.config.env,
+		version,
 	}
 
-	if err := app.jsonResponse(w, http.StatusOK, data); err != nil {
+	if err := app.jsonResponse(w, http.StatusOK, s); err != nil {
 		app.internalServerError(w, r, err)
 	}
 }
