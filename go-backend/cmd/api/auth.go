@@ -50,7 +50,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		app.internalServerError(w, r, err)
 		return
 	}
-	
+
 	// generate token
 	plainToken := uuid.New().String()
 	hash := sha256.Sum256([]byte(plainToken))
@@ -58,18 +58,16 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	if err := app.store.Users.CreateAndInvite(r.Context(), user, hashToken, app.config.mail.exp); err != nil {
 		// handle errors
-		if err != nil {
-			switch err {
-			case store.ErrDuplicateEmail:
-				app.badRequest(w, r, store.ErrDuplicateEmail)
-				return
-			case store.ErrDuplicateUsername:
-				app.badRequest(w, r, store.ErrDuplicateUsername)
-				return
-			default:
-				app.internalServerError(w, r, err)
-				return
-			}
+		switch err {
+		case store.ErrDuplicateEmail:
+			app.badRequest(w, r, store.ErrDuplicateEmail)
+			return
+		case store.ErrDuplicateUsername:
+			app.badRequest(w, r, store.ErrDuplicateUsername)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
 		}
 	}
 
