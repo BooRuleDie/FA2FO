@@ -15,6 +15,7 @@ var (
 	ErrAlreadyFollowing  = errors.New("already following this user")
 	ErrDuplicateEmail    = errors.New("email address already exists")
 	ErrDuplicateUsername = errors.New("username already exists")
+	ErrTokenExpired      = errors.New("token expired")
 )
 
 // User Model, could be in a
@@ -56,6 +57,7 @@ type usersRepository interface {
 
 	// auth
 	CreateAndInvite(context.Context, *User, string, time.Duration) error
+	Activate(context.Context, string) error
 }
 
 // postgreSQL Users struct that'll satisfy
@@ -217,4 +219,85 @@ func (us *pqUsers) createUserInvitation(ctx context.Context, tx *sql.Tx, token s
 	}
 
 	return nil
+}
+
+func (us *pqUsers) findUserByToken(ctx context.Context, tx *sql.Tx, token string) (int64, error) {
+	query := `
+		SELECT
+		    ui.user_id,
+		    CASE
+		        WHEN NOW() > ui.expiry THEN TRUE
+		        ELSE FALSE
+		    END AS is_expired
+		FROM user_invitations ui
+		WHERE ui.token = $1;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var userID int64
+	var isExpired bool
+	if err := tx.QueryRowContext(ctx, query, token).Scan(&userID, &isExpired); err != nil {
+		if err == sql.ErrNoRows {
+			return 0, ErrNotFound
+		} else {
+			return 0, err
+		}
+	}
+	if isExpired == true {
+		return 0, ErrTokenExpired
+	}
+
+	return userID, nil
+}
+
+func (us *pqUsers) updateUserActivation(ctx context.Context, tx *sql.Tx, userID int64) error {
+	query := `
+		UPDATE users SET is_active = TRUE WHERE id = $1;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, userID)
+
+	return err
+}
+
+func (us *pqUsers) deleteInvitationToken(ctx context.Context, tx *sql.Tx, token string) error {
+	query := `
+		DELETE FROM user_invitations WHERE "token" = $1;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, token)
+
+	return err
+}
+
+func (us *pqUsers) Activate(ctx context.Context, token string) error {
+	return withTx(us.db, ctx, func(tx *sql.Tx) error {
+		// find users who owns the token
+		userID, err := us.findUserByToken(ctx, tx, token)
+		if err != nil {
+			return err
+		}
+
+		// update the user
+		err = us.updateUserActivation(ctx, tx, userID)
+		if err != nil {
+			return err
+		}
+
+		// clean the invitation token
+		err = us.deleteInvitationToken(ctx, tx, token)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 }

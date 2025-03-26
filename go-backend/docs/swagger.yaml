@@ -56,6 +56,21 @@ definitions:
     - tags
     - title
     type: object
+  main.UserWithToken:
+    properties:
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: integer
+      token:
+        type: string
+      updated_at:
+        type: string
+      username:
+        type: string
+    type: object
   main.status:
     properties:
       env:
@@ -167,7 +182,7 @@ paths:
         "201":
           description: "User\tregistered"
           schema:
-            $ref: '#/definitions/store.User'
+            $ref: '#/definitions/main.UserWithToken'
         "400":
           description: Bad Request
           schema: {}
@@ -398,6 +413,31 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Unfollow a user
+      tags:
+      - users
+  /users/activate/{token}:
+    patch:
+      description: Activate a user by invitation token
+      parameters:
+      - description: Invitation Token
+        in: path
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: User activated
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema: {}
+        "500":
+          description: Internal Server Error
+          schema: {}
+      summary: Activate a user
       tags:
       - users
   /users/feed:

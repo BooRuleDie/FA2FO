@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"go-backend/internal/store"
 	"net/http"
 
@@ -15,6 +13,11 @@ type RegisterUserPayload struct {
 	Password string `json:"password" validate:"required,min=3,max=72"`
 }
 
+type UserWithToken struct {
+	*store.User
+	Token string `json:"token"`
+}
+
 // registerUserHandler godoc
 //
 //	@Summary		Registers a user
@@ -23,7 +26,7 @@ type RegisterUserPayload struct {
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		RegisterUserPayload	true	"User credentials"
-//	@Success		201		{object}	store.User			"User	registered"
+//	@Success		201		{object}	UserWithToken		"User	registered"
 //	@Failure		400		{object}	error
 //	@Failure		409		{object}	error	"Duplicate email or username"
 //	@Failure		500		{object}	error
@@ -52,11 +55,9 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	// generate token
-	plainToken := uuid.New().String()
-	hash := sha256.Sum256([]byte(plainToken))
-	hashToken := hex.EncodeToString(hash[:])
+	token := uuid.New().String()
 
-	if err := app.store.Users.CreateAndInvite(r.Context(), user, hashToken, app.config.mail.exp); err != nil {
+	if err := app.store.Users.CreateAndInvite(r.Context(), user, token, app.config.mail.exp); err != nil {
 		// handle errors
 		switch err {
 		case store.ErrDuplicateEmail:
@@ -71,7 +72,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 	}
 
-	if err := app.jsonResponse(w, http.StatusOK, nil); err != nil {
+	uwt := UserWithToken{
+		User:  user,
+		Token: token,
+	}
+
+	if err := app.jsonResponse(w, http.StatusOK, &uwt); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}

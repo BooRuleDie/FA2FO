@@ -4,6 +4,8 @@ import (
 	"errors"
 	"go-backend/internal/store"
 	"net/http"
+
+	"github.com/go-chi/chi/v5"
 )
 
 var (
@@ -121,6 +123,34 @@ func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Reque
 	if err := app.store.Users.Unfollow(r.Context(), userID, followerID); err != nil {
 		app.internalServerError(w, r, err)
 		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
+// Activate User gdoc
+//
+//	@Summary		Activate a user
+//	@Description	Activate a user by invitation token
+//	@Tags			users
+//	@Produce		json
+//	@Param			token	path		string	true	"Invitation Token"
+//	@Success		204		{string}	string	"User activated"
+//	@Failure		404		{object}	error
+//	@Failure		500		{object}	error
+//	@Router			/users/activate/{token} [patch]
+func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Request) {
+	token := chi.URLParam(r, "token")
+
+	if err := app.store.Users.Activate(r.Context(), token); err != nil {
+		switch err {
+		case store.ErrNotFound:
+			app.notFound(w, r, err)
+			return
+		default:
+			app.internalServerError(w, r, err)
+			return
+		}
 	}
 
 	w.WriteHeader(http.StatusOK)
