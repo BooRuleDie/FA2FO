@@ -85,7 +85,7 @@ func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		user.Username,
 		// should be hashed before inserting
 		// or let database handle the hashing
-		user.Password,
+		user.Password.hash,
 		user.Email,
 	).Scan(
 		&user.ID,

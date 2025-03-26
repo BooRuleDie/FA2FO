@@ -19,15 +19,15 @@ type RegisterUserPayload struct {
 //
 //	@Summary		Registers a user
 //	@Description	Registers a user
-//	@Tags			authentication
+//	@Tags			auth
 //	@Accept			json
 //	@Produce		json
 //	@Param			payload	body		RegisterUserPayload	true	"User credentials"
-//	@Success		201		{object}	store.User			“User	registered"
+//	@Success		201		{object}	store.User			"User	registered"
 //	@Failure		400		{object}	error
-
-// @Failure	500	{object}	error
-// @Router		/authentication/user [post]
+//	@Failure		409		{object}	error	"Duplicate email or username"
+//	@Failure		500		{object}	error
+//	@Router			/auth/user [post]
 func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var rup RegisterUserPayload
 	if err := readJSON(w, r, &rup); err != nil {

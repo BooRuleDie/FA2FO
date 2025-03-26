@@ -16,11 +16,17 @@ func Seed(store store.Storage, db *sql.DB) error {
 	comments := generateComments(200, users, posts)
 
 	// Insert users
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		panic(err)
+	}
 	for _, user := range users {
-		if err := store.Users.Create(ctx, user); err != nil {
+		if err := store.Users.Create(ctx, tx, user); err != nil {
+			tx.Rollback()
 			return fmt.Errorf("Error creating user: %v", err)
 		}
 	}
+	tx.Commit()
 
 	// Insert posts
 	for _, post := range posts {
