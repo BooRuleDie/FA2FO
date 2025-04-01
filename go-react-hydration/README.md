@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="./hydration-ui.png" alt="Hydration UI">
+</p>
+
 # What's Hydration?
 
 Hydration is the process of attaching JavaScript event handlers and state to server-rendered HTML. When using React with Go SSR, the server first renders the React components to static HTML and sends it to the client. Then, React on the client-side "hydrates" this HTML by adding all the necessary event handlers and making it interactive. This provides the best of both worlds - fast initial page loads from SSR and full interactivity from client-side React.
@@ -49,7 +53,3 @@ go run .
 # This creates the client-side bundle that will be hydrated
 npm run build
 ```
-
-<p align="center">
-  <img src="./hydration-ui.png" alt="Hydration UI">
-</p>
