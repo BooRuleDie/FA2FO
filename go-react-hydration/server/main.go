@@ -26,7 +26,7 @@ type Color struct {
 
 func main() {
 	// Setup file server for static files
-	fs := http.FileServer(http.Dir("../frontend/dist/assets/"))
+	fs := http.FileServer(http.Dir("../client/dist/assets/"))
 	http.Handle("/assets/", http.StripPrefix("/assets/", fs))
 
 	// Setup routes
@@ -51,16 +51,23 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse template
-	tmpl, err := template.ParseFiles(filepath.Join("templates", "index.html"))
+	// Create template function map
+	funcMap := template.FuncMap{
+		"css": func(s string) template.CSS {
+			return template.CSS(s)
+		},
+	}
+
+	// Parse template with function map
+	tmpl, err := template.New("index.html").Funcs(funcMap).ParseFiles(filepath.Join("templates", "index.html"))
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Render template with data
-	data := map[string]interface{}{
-		"Product":    product,
+	data := map[string]any{
+		"Product":     product,
 		"ProductJSON": template.JS(productJSON),
 	}
 
@@ -72,7 +79,7 @@ func handleIndex(w http.ResponseWriter, r *http.Request) {
 
 func handleProductAPI(w http.ResponseWriter, r *http.Request) {
 	product := getMockProduct()
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
 }
@@ -84,9 +91,9 @@ func getMockProduct() Product {
 		Description: "High-quality leather jacket with a modern design. Features multiple pockets and adjustable waist.",
 		Price:       299.99,
 		Colors: []Color{
-			{Name: "Black", Value: "#000000"},
-			{Name: "Brown", Value: "#8B4513"},
-			{Name: "Tan", Value: "#D2B48C"},
+			{Name: "Black", Value: "rgb(0,0,0)"},
+			{Name: "Brown", Value: "rgb(139,69,19)"},
+			{Name: "Tan", Value: "rgb(210,180,140)"},
 		},
 		Images: []string{
 			"https://placehold.co/600x400?text=Leather+Jacket+1",
