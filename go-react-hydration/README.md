@@ -36,3 +36,20 @@ Common hydration mismatch errors and solutions:
 - Missing/extra nodes: Verify conditional rendering logic
 - Event handler issues: Confirm proper event binding
 - State inconsistency: Initialize state correctly
+
+# Usage 
+```bash
+# Navigate to the server directory
+cd server
+
+# Start the Go server
+go run .
+
+# If the dist directory is empty, build the React app first
+# This creates the client-side bundle that will be hydrated
+npm run build
+```
+
+<p align="center">
+  <img src="./hydration-ui.png" alt="Hydration UI">
+</p>
