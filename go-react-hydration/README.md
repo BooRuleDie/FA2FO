@@ -49,7 +49,8 @@ cd server
 # Start the Go server
 go run .
 
-# If the dist directory is empty, build the React app first
+# If the client/dist/assets directory is empty, build the React app first
 # This creates the client-side bundle that will be hydrated
+cd client
 npm run build
 ```
