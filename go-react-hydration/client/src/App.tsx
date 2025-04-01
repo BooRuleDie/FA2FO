@@ -93,14 +93,7 @@ function App({ initialProduct }: AppProps) {
                                 ))}
                             </div>
                             {product.colors.length > 0 && (
-                                <p className="text-sm text-gray-600 mt-1">
-                                    Selected:{" "}
-                                    <span>
-                                        {
-                                            product.colors[selectedColorIndex]
-                                                .name
-                                        }
-                                    </span>
+                                <p className="text-sm text-gray-600 mt-1">Selected:<span>{product.colors[selectedColorIndex].name}</span>
                                 </p>
                             )}
                         </div>
@@ -156,14 +149,13 @@ function App({ initialProduct }: AppProps) {
                     <h2 className="text-xl font-semibold text-gray-800">
                         Product Gallery
                     </h2>
-                    <div className="grid grid-cols-3 gap-4 mt-4">
-                        {product.images.map((image, index) => (
+                    <div className="grid grid-cols-3 gap-4 mt-4">{product.images.map((image, index) => (
                             <img
                                 key={index}
                                 src={image}
-                                className={`h-32 w-full object-cover rounded cursor-pointer ${
+                                className={`h-32 w-full object-cover rounded cursor-pointer${
                                     selectedImageIndex === index
-                                        ? "ring-2 ring-blue-500"
+                                        ? " ring-2 ring-blue-500"
                                         : ""
                                 }`}
                                 onClick={() => handleImageSelect(index)}
