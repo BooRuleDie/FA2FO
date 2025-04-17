@@ -67,13 +67,21 @@ var sizeMap = map[int]size{
 	58: {ID: 58, ValueTr: "Standart", ValueEn: "Standard"},
 }
 
+type SizeSizeValue struct {
+	SizeID      int    `json:"size_id"`
+	Size        string `json:"size"`
+	ProductID   int    `json:"product_id"`
+	SizeValueID int    `json:"size_value_id"`
+	IsMigrated  int    `json:"is_migrated"`
+}
+
 func sizeAI(userPrompt string) (string, error) {
 	var systemPrompt = sizeSystemPrompt
-	
+
 	output, err := askAI(userPrompt, systemPrompt)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return output, nil
 }

@@ -31,22 +31,22 @@ var colorMap = map[int]color{
 }
 
 type VariationColor struct {
-	VariationID  int    `json:"variation_id"`
-	ColorHex     string `json:"color_hex"`
-	ColorName    string `json:"color_name"`
-	IsProcessed  int    `json:"is_processed"`
-	IsMigrated   int    `json:"is_migrated"`
+	VariationID int    `json:"variation_id"`
+	ColorHex    string `json:"color_hex"`
+	ColorID     int    `json:"color_id"`
+	ProductID   int    `json:"product_id"`
+	ColorName   string `json:"color_name"`
+	IsProcessed int    `json:"is_processed"`
+	IsMigrated  int    `json:"is_migrated"`
 }
 
 func colorAI(userPrompt string) (string, error) {
 	var systemPrompt = colorSystemPrompt
-	
+
 	output, err := askAI(userPrompt, systemPrompt)
 	if err != nil {
 		return "", err
 	}
-	
+
 	return output, nil
 }
-
-
