@@ -47,7 +47,7 @@ Run the service with Docker Compose:
 make docker-up
 ```
 
-## 🐋 Docker Compose Structure
+## Docker Compose Structure
 
 - `volumes:` are used to persist data like `exams.db`
 - `.env` is used to inject secrets/environment variables
@@ -71,7 +71,7 @@ To make the app fully self-contained and suitable for a `scratch` image:
 Use this Makefile command to get your chat ID:
 
 ```bash
-make get_chat_ids
+make get-chat-ids
 ```
 
 This sends a request to the Telegram Bot API to list recent messages and chat IDs.

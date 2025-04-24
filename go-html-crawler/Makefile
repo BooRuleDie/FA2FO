@@ -6,8 +6,8 @@ build:
 run: build
 	@./app
 
-.PHONY: get_chat_ids
-get_chat_ids:
+.PHONY: get-chat-ids
+get-chat-ids:
 	@curl -s "https://api.telegram.org/bot$(TELEGRAM_BOT_TOKEN)/getUpdates"
 
 .PHONY: docker-build
