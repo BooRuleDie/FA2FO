@@ -1,0 +1,16 @@
+# Buils
+app
+.envrc
+.env
+
+# Ignore build cache and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Ignore local DB file (optional, unless you want to bake it in)
+exams.db
+
+# Go build artifacts
+/goapp

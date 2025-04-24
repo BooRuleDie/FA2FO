@@ -9,3 +9,11 @@ run: build
 .PHONY: get_chat_ids
 get_chat_ids:
 	@curl -s "https://api.telegram.org/bot$(TELEGRAM_BOT_TOKEN)/getUpdates"
+
+.PHONY: docker-build
+docker-build:
+	@docker build -t osym-checker:latest .
+
+.PHONY: docker-up
+docker-up:
+	@docker compose up -d

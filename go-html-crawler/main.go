@@ -81,10 +81,12 @@ func runTask() error {
 
 		// if exam is not new and it's not updated
 		// not we have already been stored that exam
-		// sleep for 5 seconds
-		fmt.Printf("Sleeping for %v seconds...\n", SLEEP_DURATION)
-		time.Sleep(SLEEP_DURATION)
+		// no need to do anything
 	}
+	
+	// sleep for 5 seconds
+	fmt.Printf("Sleeping for %v seconds...\n", SLEEP_DURATION)
+	time.Sleep(SLEEP_DURATION)
 
 	return nil
 

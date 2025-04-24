@@ -2,6 +2,7 @@
 app
 exams.db
 .envrc
+.env
 
 # Binaries for programs and plugins
 *.exe

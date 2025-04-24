@@ -1,0 +1,10 @@
+services:
+    osym-checker:
+        image: osym-checker:latest
+        container_name: osym-checker
+        volumes:
+            - ./data:/data
+        working_dir: /data
+        restart: unless-stopped
+        env_file:
+            - .env
