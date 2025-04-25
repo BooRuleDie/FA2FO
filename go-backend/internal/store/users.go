@@ -50,6 +50,7 @@ func (p *password) Set(text string) error {
 type usersRepository interface {
 	Create(context.Context, *sql.Tx, *User) error
 	GetByID(context.Context, int64) (*User, error)
+	Delete(context.Context, int64) error
 
 	// userID, followerID
 	Follow(context.Context, int64, int64) error
@@ -295,6 +296,42 @@ func (us *pqUsers) Activate(ctx context.Context, token string) error {
 		// clean the invitation token
 		err = us.deleteInvitationToken(ctx, tx, token)
 		if err != nil {
+			return err
+		}
+
+		return nil
+	})
+}
+
+func (us *pqUsers) delete(ctx context.Context, tx *sql.Tx, userID int64) error {
+	query := `DELETE FROM users WHERE id = $1;`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, userID)
+
+	return err
+}
+
+func (us *pqUsers) deleteUserInvitations(ctx context.Context, tx *sql.Tx, userID int64) error {
+	query := `DELETE FROM user_invitations WHERE user_id = $1;`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	_, err := tx.ExecContext(ctx, query, userID)
+
+	return err
+}
+
+func (us *pqUsers) Delete(ctx context.Context, userID int64) error {
+	return withTx(us.db, ctx, func(tx *sql.Tx) error {
+		if err := us.delete(ctx, tx, userID); err != nil {
+			return err
+		}
+
+		if err := us.deleteUserInvitations(ctx, tx, userID); err != nil {
 			return err
 		}
 

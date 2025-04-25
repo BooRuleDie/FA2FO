@@ -3,6 +3,7 @@ package main
 import (
 	"go-backend/internal/db"
 	"go-backend/internal/env"
+	"go-backend/internal/mailer"
 	"go-backend/internal/store"
 	"time"
 
@@ -56,7 +57,12 @@ func main() {
 		},
 		mail: mailConfig{
 			exp: time.Hour * 24 * 3, // 3 days
+			fromEmail: env.MustGetString("FROM_EMAIL"),
+			sengrid: sengridConfig{
+				apiKey: env.MustGetString("SENDGRID_API_KEY"),
+			},
 		},
+		frontendURL: "http://localhost:5000",
 	}
 	// logger
 	prodConfig := zap.NewProductionConfig()
@@ -78,11 +84,15 @@ func main() {
 	defer db.Close()
 
 	store := store.NewPostgreSQLStorage(db)
+	
+	// mailer
+	mailer := mailer.NewSendgrid(cfg.mail.sengrid.apiKey, cfg.mail.fromEmail)
 
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
+		mailer: mailer,
 	}
 
 	logger.Fatal(app.run())

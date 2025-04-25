@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"go-backend/internal/mailer"
 	"go-backend/internal/store"
 	"net/http"
 
@@ -76,6 +78,31 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		User:  user,
 		Token: token,
 	}
+	
+	activationURL := fmt.Sprintf("%s/confirm/%s", app.config.frontendURL, token)
+	isProdEnv := app.config.env == "prod"
+	vars := struct{
+		Username string
+		ActivationURL string
+	}{
+		Username: user.Username,
+		ActivationURL: activationURL,
+	}
+	
+	// send email
+	err := app.mailer.Send(mailer.UserWelcomeTemplate, user.Username, user.Email, vars, !isProdEnv)
+	if err != nil {
+		app.logger.Errorw("error sending welcome email", "error", err)
+		
+		// rollback user creation if email fails (SAGA pattern)
+		if err := app.store.Users.Delete(r.Context(), user.ID); err != nil {
+			app.logger.Errorw("failed to delete user after welcome email fail", "error", err)
+		}
+		
+		app.internalServerError(w, r, err)
+		return
+	}
+	
 
 	if err := app.jsonResponse(w, http.StatusOK, &uwt); err != nil {
 		app.internalServerError(w, r, err)

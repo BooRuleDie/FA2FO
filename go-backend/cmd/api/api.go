@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-backend/docs"
+	"go-backend/internal/mailer"
 	"go-backend/internal/store"
 	"net/http"
 	"time"
@@ -18,6 +19,7 @@ type application struct {
 	// it'd be better to implement it as an interface
 	// instead of a concrete implementation for better testability
 	logger *zap.SugaredLogger
+	mailer mailer.Client
 }
 
 type config struct {
@@ -26,10 +28,17 @@ type config struct {
 	env     string
 	swagger swaggerConfig
 	mail    mailConfig
+	frontendURL string
 }
 
 type mailConfig struct {
-	exp time.Duration
+	sengrid   sengridConfig
+	exp       time.Duration
+	fromEmail string
+}
+
+type sengridConfig struct {
+	apiKey string
 }
 
 type swaggerConfig struct {
