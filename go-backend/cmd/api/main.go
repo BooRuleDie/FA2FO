@@ -63,6 +63,12 @@ func main() {
 			},
 		},
 		frontendURL: "http://localhost:5000",
+		auth: authConfig{
+			basic: basicAuthConfig{
+				username: env.MustGetString("BASIC_AUTH_USERNAME"),
+				pass: env.MustGetString("BASIC_AUTH_PASS"),
+			},
+		},
 	}
 	// logger
 	prodConfig := zap.NewProductionConfig()
