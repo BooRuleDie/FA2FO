@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-backend/internal/auth"
 	"go-backend/internal/db"
 	"go-backend/internal/env"
 	"go-backend/internal/mailer"
@@ -68,6 +69,10 @@ func main() {
 				username: env.MustGetString("BASIC_AUTH_USERNAME"),
 				pass: env.MustGetString("BASIC_AUTH_PASS"),
 			},
+			token: tokenConfig{
+				secret: env.MustGetString("AUTH_JWT_SECRET"),
+				exp: time.Hour * 24 * time.Duration(env.MustGetInt("AUTH_JWT_EXPIRES_IN_DAYS")),
+			},
 		},
 	}
 	// logger
@@ -93,12 +98,17 @@ func main() {
 	
 	// mailer
 	mailer := mailer.NewSendgrid(cfg.mail.sengrid.apiKey, cfg.mail.fromEmail)
+	
+	// authenticator
+	
+	authenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, auth.AUD, auth.Hostname)
 
 	app := &application{
 		config: cfg,
 		store:  store,
 		logger: logger,
 		mailer: mailer,
+		auth: authenticator,
 	}
 
 	logger.Fatal(app.run())

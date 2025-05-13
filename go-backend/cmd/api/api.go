@@ -2,6 +2,7 @@ package main
 
 import (
 	"go-backend/docs"
+	"go-backend/internal/auth"
 	"go-backend/internal/mailer"
 	"go-backend/internal/store"
 	"net/http"
@@ -21,6 +22,7 @@ type application struct {
 	// instead of a concrete implementation for better testability
 	logger *zap.SugaredLogger
 	mailer mailer.Client
+	auth   auth.Authenticator
 }
 
 type config struct {
@@ -35,6 +37,12 @@ type config struct {
 
 type authConfig struct {
 	basic basicAuthConfig
+	token tokenConfig
+}
+
+type tokenConfig struct {
+	secret string
+	exp    time.Duration
 }
 
 type basicAuthConfig struct {
@@ -113,8 +121,11 @@ func (app *application) mount() http.Handler {
 				r.Get("/feed", app.getUserFeedHandler)
 			})
 		})
+
+		// public routes
 		r.Route("/auth", func(r chi.Router) {
 			r.Post("/user", app.registerUserHandler)
+			r.Post("/token", app.createTokenHandler)
 		})
 	})
 

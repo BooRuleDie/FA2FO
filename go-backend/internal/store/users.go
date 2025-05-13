@@ -50,6 +50,7 @@ func (p *password) Set(text string) error {
 type usersRepository interface {
 	Create(context.Context, *sql.Tx, *User) error
 	GetByID(context.Context, int64) (*User, error)
+	GetByEmail(context.Context, string) (*User, error)
 	Delete(context.Context, int64) error
 
 	// userID, followerID
@@ -139,6 +140,45 @@ func (us *pqUsers) GetByID(ctx context.Context, userID int64) (*User, error) {
 	if err != nil {
 		switch {
 		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
+}
+
+func (us *pqUsers) GetByEmail(ctx context.Context, email string) (*User, error) {
+	query := `
+		SELECT
+			u.id,
+			u.username,
+			u.email,
+			u.created_at,
+			u.updated_at
+		FROM users u
+		WHERE u.email = $1 AND u.is_active = TRUE;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	var user User
+	err := us.db.QueryRowContext(
+		ctx,
+		query,
+		email,
+	).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+	if err != nil {
+		switch err {
+		case sql.ErrNoRows:
 			return nil, ErrNotFound
 		default:
 			return nil, err
