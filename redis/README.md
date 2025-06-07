@@ -18,3 +18,4 @@ Redis Concepts
 * [Transaction](./redis/transation.md)
 * [Pub/Sub](./redis/pub-sub.md)
 * [Script](./redis/script.md)
+* [Connection & Security](./redis/connection-security.md)
