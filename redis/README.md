@@ -12,3 +12,4 @@ Redis Concepts
 * [Strings](./redis/string.md)
 * [List](./redis/list.md)
 * [Set](./redis/set.md)
+* [Sorted Set](./redis/sorted-set.md)
