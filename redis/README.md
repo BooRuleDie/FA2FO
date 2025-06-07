@@ -15,7 +15,7 @@ Redis Concepts
 * [Sorted Set](./redis/sorted-set.md)
 * [HyperLogLog](./redis/hyperloglog.md)
 * [Hash](./redis/hash.md)
-* [Transaction](./redis/transation.md)
+* [Transaction](./redis/transaction.md)
 * [Pub/Sub](./redis/pub-sub.md)
 * [Script](./redis/script.md)
 * [Connection & Security](./redis/connection-security.md)
