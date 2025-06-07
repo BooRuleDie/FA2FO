@@ -19,3 +19,4 @@ Redis Concepts
 * [Pub/Sub](./redis/pub-sub.md)
 * [Script](./redis/script.md)
 * [Connection & Security](./redis/connection-security.md)
+* [Benchmark](./redis/benchmark.md)
