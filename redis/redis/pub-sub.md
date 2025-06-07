@@ -1,3 +1,5 @@
+# Pub / Sub
+
 Redis can also act as a message broker with publishers and consumers. Here are some examples:
 
 This shows how you can spin up 2 consumers where one listens to the `news` channel and the other listens to both the `news` and `other_news` channels. When a message is published to both channels from another client, you can see how they act:

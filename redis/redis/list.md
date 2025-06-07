@@ -1,3 +1,5 @@
+# List
+
 You can fetch all keys with the `KEYS` command:
 ```bash
 127.0.0.1:6379> KEYS *

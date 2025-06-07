@@ -1,3 +1,5 @@
+# Transaction
+
 Transactions in Redis are used for atomicity. If you need to perform multiple operations as if they were just one operation, transactions should be used. The way you use them is similar to transactions in relational databases. Additionally, the `WATCH` command allows you to handle race conditions and similar concurrency problems (for example, optimistic concurrency can be implemented).
 
 When you use `MULTI`, it starts queueing your requests and after you execute `EXEC`, it executes your operations. If you need to cancel the transaction, you can use the `DISCARD` command:

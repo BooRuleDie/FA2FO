@@ -1,3 +1,5 @@
+# HyperLogLog
+
 HyperLogLog is a special data type in Redis that estimates the number of unique elements (cardinality) in a set with an error rate of about 0.81%. What's great about HyperLogLog is that regardless of how much data you enter into the key, it always uses a small fixed memory size of just 12 KB per key. This makes it extremely memory efficient for counting distinct elements in very large datasets.
 
 You can add elements, get the count, and merge HyperLogLog keys by using the commands `PFADD`, `PFCOUNT`, and `PFMERGE`:

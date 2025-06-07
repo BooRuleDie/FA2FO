@@ -17,3 +17,4 @@ Redis Concepts
 * [Hash](./redis/hash.md)
 * [Transaction](./redis/transation.md)
 * [Pub/Sub](./redis/pub-sub.md)
+* [Script](./redis/script.md)

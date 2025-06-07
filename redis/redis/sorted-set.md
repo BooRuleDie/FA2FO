@@ -1,3 +1,5 @@
+# Sorted Set
+
 Sorted Sets are just like regular sets, but instead of being sorted by the value itself, they're sorted by a score value associated with each member.
 
 Here's how you create a sorted set, get the items inside, and get the size of a sorted set with the commands `ZADD`, `ZRANGE`, and `ZCARD`:

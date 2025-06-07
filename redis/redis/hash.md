@@ -1,3 +1,5 @@
+# Hash
+
 Hashes or Hash data structures in Redis can be considered similar to dictionaries in Python or objects in JSON. They provide a convenient way to store field-value pairs, making them ideal for representing objects, especially when you need to access or modify individual fields without retrieving the entire structure. Hashes are memory efficient and allow atomic operations on individual fields.
 
 To create a hash you can use `HSET`, and for retrieving keys, values or all fields you can use `HKEYS`, `HVALS`, `HGETALL`:

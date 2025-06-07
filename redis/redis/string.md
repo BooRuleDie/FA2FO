@@ -1,3 +1,5 @@
+# String
+
 You can simply `SET` and `GET` string values with the following commands:
 ```bash
 127.0.0.1:6379> SET name booruledie
