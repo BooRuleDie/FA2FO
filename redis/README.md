@@ -16,3 +16,4 @@ Redis Concepts
 * [HyperLogLog](./redis/hyperloglog.md)
 * [Hash](./redis/hash.md)
 * [Transaction](./redis/transation.md)
+* [Pub/Sub](./redis/pub-sub.md)
