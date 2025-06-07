@@ -13,3 +13,4 @@ Redis Concepts
 * [List](./redis/list.md)
 * [Set](./redis/set.md)
 * [Sorted Set](./redis/sorted-set.md)
+* [HyperLogLog](./redis/hyperloglog.md)
