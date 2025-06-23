@@ -143,17 +143,19 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 		app.badRequest(w, r, err)
 		return
 	}
+	
+	user := getUserFromContext(r.Context())
+	if user == nil {
+		app.internalServerError(w, r, errors.New("nil user struct retrieved from getUserFromContext"))
+		return
+	}
 
 	updatedPost := &store.Post{
 		ID:      postID,
 		Title:   upp.Title,
 		Content: upp.Content,
 		Tags:    upp.Tags,
-
-		// TODO: after auth is implemented
-		// change this hardcoded user_id with
-		// the actual user_id
-		UserID: 1,
+		UserID: user.ID,
 	}
 
 	err = app.store.Posts.Update(r.Context(), updatedPost)
@@ -185,6 +187,12 @@ func (app *application) updatePostHandler(w http.ResponseWriter, r *http.Request
 //	@Security		ApiKeyAuth
 //	@Router			/posts/{id} [delete]
 func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request) {
+	user := getUserFromContext(r.Context())
+	if user == nil {
+		app.internalServerError(w, r, ErrNilUser)
+		return
+	}
+	
 	idParam := chi.URLParam(r, "postID")
 	postID, err := strconv.ParseInt(idParam, 10, 64)
 	if err != nil {
@@ -194,11 +202,7 @@ func (app *application) deletePostHandler(w http.ResponseWriter, r *http.Request
 
 	deletedPost := &store.Post{
 		ID: postID,
-
-		// TODO: after auth is implemented
-		// change this hardcoded user_id with
-		// the actual user_id
-		UserID: 1,
+		UserID: user.ID,
 	}
 
 	err = app.store.Posts.Delete(r.Context(), deletedPost)

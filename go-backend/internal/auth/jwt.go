@@ -1,9 +1,13 @@
 package auth
 
-import "github.com/golang-jwt/jwt/v5"
+import (
+	"fmt"
+
+	"github.com/golang-jwt/jwt/v5"
+)
 
 var (
-	AUD     string = "GopherSocial"
+	AUD      string = "GopherSocial"
 	Hostname string = "GopherSocial"
 )
 
@@ -32,5 +36,16 @@ func (auth *JWTAuthenticator) GenerateToken(claims jwt.Claims) (string, error) {
 }
 
 func (auth *JWTAuthenticator) ValidateToken(token string) (*jwt.Token, error) {
-	return nil, nil
+	return jwt.Parse(token, func(t *jwt.Token) (any, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method %v", t.Header["alg"])
+		}
+
+		return []byte(auth.secret), nil
+	},
+		jwt.WithExpirationRequired(),
+		jwt.WithAudience(auth.aud),
+		jwt.WithIssuer(auth.aud),
+		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Name}),
+	)
 }

@@ -101,6 +101,7 @@ func (app *application) mount() http.Handler {
 		r.With(app.BasicAuthMiddleware()).Get("/health", app.healthCheckHandler)
 		r.Get("/swagger/*", httpSwagger.Handler(httpSwagger.URL(app.config.swagger.jsonURL)))
 		r.Route("/post", func(r chi.Router) {
+			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createPostHandler)
 			r.Route("/{postID}", func(r chi.Router) {
 				r.With(app.postCtx).Get("/", app.getPostHandler)
@@ -111,6 +112,7 @@ func (app *application) mount() http.Handler {
 		r.Route("/users", func(r chi.Router) {
 			r.Patch("/activate/{token}", app.activateUserHandler)
 			r.Route("/{userID}", func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
 				r.Use(app.userIDCtx)
 				r.Get("/", app.getUserHandler)
 				r.Put("/follow", app.followUserHandler)
@@ -118,6 +120,7 @@ func (app *application) mount() http.Handler {
 			})
 			// logical separation
 			r.Group(func(r chi.Router) {
+				r.Use(app.AuthTokenMiddleware)
 				r.Get("/feed", app.getUserFeedHandler)
 			})
 		})

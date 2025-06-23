@@ -4,13 +4,16 @@ import (
 	"errors"
 	"go-backend/internal/store"
 	"net/http"
+	"strconv"
 
 	"github.com/go-chi/chi/v5"
 )
 
 var (
-	ErrSelfFollow   = errors.New("users cannot follow themselves")
-	ErrSelfUnfollow = errors.New("users cannot unfollow themselves")
+	ErrSelfFollow    = errors.New("users cannot follow themselves")
+	ErrSelfUnfollow  = errors.New("users cannot unfollow themselves")
+	ErrNilUser       = errors.New("nil user fetched from the context")
+	ErrInvalidUserID = errors.New("invalid userID")
 )
 
 // GetUser godoc
@@ -65,20 +68,24 @@ func (app *application) getUserHandler(w http.ResponseWriter, r *http.Request) {
 //	@Security		ApiKeyAuth
 //	@Router			/users/{userID}/follow [put]
 func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request) {
-	userID := userIDFromContext(r.Context())
-	if userID == 0 {
-		app.internalServerError(w, r, ErrUserContext)
+	user := getUserFromContext(r.Context())
+	if user == nil {
+		app.internalServerError(w, r, ErrNilUser)
+		return
 	}
 
-	// TODO: change that line after auth is completed
-	var followerID int64 = 1
+	followerID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.badRequest(w, r, ErrInvalidUserID)
+		return
+	}
 
-	if userID == followerID {
+	if user.ID == followerID {
 		app.conflict(w, r, ErrSelfFollow)
 		return
 	}
 
-	err := app.store.Users.Follow(r.Context(), userID, followerID)
+	err = app.store.Users.Follow(r.Context(), user.ID, followerID)
 	if err != nil {
 		switch err {
 		case store.ErrAlreadyFollowing:
@@ -107,20 +114,24 @@ func (app *application) followUserHandler(w http.ResponseWriter, r *http.Request
 //	@Security		ApiKeyAuth
 //	@Router			/users/{userID}/unfollow [put]
 func (app *application) unfollowUserHandler(w http.ResponseWriter, r *http.Request) {
-	userID := userIDFromContext(r.Context())
-	if userID == 0 {
-		app.internalServerError(w, r, ErrUserContext)
+	user := getUserFromContext(r.Context())
+	if user == nil {
+		app.internalServerError(w, r, ErrNilUser)
+		return
 	}
 
-	// TODO: change that line after auth is completed
-	var followerID int64 = 1
+	followerID, err := strconv.ParseInt(chi.URLParam(r, "userID"), 10, 64)
+	if err != nil {
+		app.badRequest(w, r, ErrInvalidUserID)
+		return
+	}
 
-	if userID == followerID {
+	if user.ID == followerID {
 		app.conflict(w, r, ErrSelfUnfollow)
 		return
 	}
 
-	if err := app.store.Users.Unfollow(r.Context(), userID, followerID); err != nil {
+	if err := app.store.Users.Unfollow(r.Context(), user.ID, followerID); err != nil {
 		app.internalServerError(w, r, err)
 		return
 	}
