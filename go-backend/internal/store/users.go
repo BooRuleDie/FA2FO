@@ -11,11 +11,13 @@ import (
 )
 
 var (
-	ErrInvalidUserID     = errors.New("invalid userID")
-	ErrAlreadyFollowing  = errors.New("already following this user")
-	ErrDuplicateEmail    = errors.New("email address already exists")
-	ErrDuplicateUsername = errors.New("username already exists")
-	ErrTokenExpired      = errors.New("token expired")
+	ErrInvalidUserID      = errors.New("invalid userID")
+	ErrAlreadyFollowing   = errors.New("already following this user")
+	ErrDuplicateEmail     = errors.New("email address already exists")
+	ErrDuplicateUsername  = errors.New("username already exists")
+	ErrTokenExpired       = errors.New("token expired")
+	ErrPasswordAssign     = errors.New("couldn't assign password to user struct")
+	ErrWrongEmailPassword = errors.New("email or password is wrong")
 )
 
 // User Model, could be in a
@@ -45,6 +47,10 @@ func (p *password) Set(text string) error {
 	p.hash = hash
 
 	return nil
+}
+
+func (p *password) Compare(password string) error {
+	return bcrypt.CompareHashAndPassword(p.hash, []byte(password))
 }
 
 type usersRepository interface {
@@ -154,6 +160,7 @@ func (us *pqUsers) GetByEmail(ctx context.Context, email string) (*User, error) 
 		SELECT
 			u.id,
 			u.username,
+			u.password,
 			u.email,
 			u.created_at,
 			u.updated_at
@@ -172,6 +179,7 @@ func (us *pqUsers) GetByEmail(ctx context.Context, email string) (*User, error) 
 	).Scan(
 		&user.ID,
 		&user.Username,
+		&user.Password.hash,
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt,

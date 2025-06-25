@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go-backend/internal/auth"
 	"go-backend/internal/mailer"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type RegisterUserPayload struct {
@@ -150,10 +152,21 @@ func (app *application) createTokenHandler(w http.ResponseWriter, r *http.Reques
 		switch err {
 		case store.ErrNotFound:
 			app.unauthorized(w, r, err)
+		case store.ErrPasswordAssign:
+			app.internalServerError(w, r, err)
 		default:
 			app.internalServerError(w, r, err)
 		}
+		return
+	}
 
+	// check if password is right
+	if err := user.Password.Compare(payload.Password); err != nil {
+		if errors.Is(err, bcrypt.ErrMismatchedHashAndPassword) {
+			app.unauthorizedWithError(w, r, store.ErrWrongEmailPassword)
+			return
+		}
+		app.unauthorized(w, r, err)
 		return
 	}
 
