@@ -9,6 +9,11 @@ import {
 import { Post } from './post.entity';
 import { Like } from './like.entity';
 
+export enum UserRoles {
+  ADMIN = 'admin',
+  CUSTOMER = 'customer',
+}
+
 @Entity({ name: 'users' })
 export class User {
   @PrimaryGeneratedColumn()
@@ -19,6 +24,16 @@ export class User {
 
   @Column({ length: 255, unique: true })
   email: string;
+
+  @Column({ length: 255 })
+  password: string;
+
+  @Column({
+    type: 'enum',
+    enum: UserRoles,
+    default: UserRoles.CUSTOMER,
+  })
+  role: UserRoles;
 
   // One-to-many relationship with posts
   @OneToMany(() => Post, (post) => post.author)

@@ -9,6 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
+    "seed": "ts-node src/modules/database/seeder/seeder.ts",
     "start:dev": "nest start --watch",
     "start:migrate": "node dist/main.js --migrate",
     "start:debug": "nest start --debug --watch",
@@ -19,24 +20,16 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    
     "typeorm": "typeorm-ts-node-commonjs",
-    "typeorm:compiled": "npm run build && npx typeorm -d dist/modules/database/data-source.js",
-    
-    "migration:generate": "npm run typeorm -- migration:generate src/modules/database/migrations/Migration -d src/modules/database/data-source.ts",
-    "migration:create": "npm run typeorm -- migration:create src/modules/database/migrations/CreateInitialTables",
-    "migration:run": "npm run typeorm -- migration:run -d src/modules/database/data-source.ts",
-    "migration:revert": "npm run typeorm -- migration:revert -d src/modules/database/data-source.ts",
-    
-    "migration:generate:compiled": "npm run build && npx typeorm migration:generate src/modules/database/migrations/Migration -d dist/modules/database/data-source.js",
-    "migration:run:compiled": "npm run build && npx typeorm migration:run -d dist/modules/database/data-source.js",
-    "migration:revert:compiled": "npm run build && npx typeorm migration:revert -d dist/modules/database/data-source.js"
+    "typeorm:compiled": "npm run build && npx typeorm -d dist/modules/database/data-source.js"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
+    "bcrypt": "^6.0.0",
     "mysql2": "^3.14.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
@@ -45,11 +38,13 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "@eslint/js": "^9.18.0",
+    "@faker-js/faker": "^9.8.0",
     "@nestjs/cli": "^11.0.0",
     "@nestjs/schematics": "^11.0.0",
     "@nestjs/testing": "^11.0.1",
     "@swc/cli": "^0.6.0",
     "@swc/core": "^1.10.7",
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.10.7",

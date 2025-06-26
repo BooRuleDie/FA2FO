@@ -94,3 +94,19 @@ nest g module modules/cache
 nest g service modules/cache
 ```
 
+## Database
+
+### Migrations
+```bash
+# don't forget to update the YOUR-MIGRATION-NAME part in the command
+npm run typeorm migration:generate src/migrations/<YOUR-MIGRATION-NAME> -- -d src/modules/database/data-source.ts
+```
+
+### Seeding
+```bash
+npm run seed
+```
+
+
+
+
