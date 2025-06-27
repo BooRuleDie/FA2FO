@@ -30,6 +30,7 @@ type User struct {
 	Password  password `json:"-"`
 	CreatedAt string   `json:"created_at"`
 	UpdatedAt string   `json:"updated_at"`
+	RoleID    int      `json:"role_id"`
 }
 
 type password struct {
@@ -82,8 +83,8 @@ func newUsersRepo(db *sql.DB) *pqUsers {
 
 func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-		INSERT INTO Users(username, password, email)
-		VALUES($1, $2, $3) RETURNING id, created_at, updated_at
+		INSERT INTO Users(username, password, email, role_id)
+		VALUES($1, $2, $3, $4) RETURNING id, created_at, updated_at
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -97,6 +98,7 @@ func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		// or let database handle the hashing
 		user.Password.hash,
 		user.Email,
+		1, // default role id which is 'user'
 	).Scan(
 		&user.ID,
 		&user.CreatedAt,

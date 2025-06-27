@@ -49,10 +49,11 @@ func Seed(store store.Storage, db *sql.DB) error {
 func generateUsers(num int) []*store.User {
 	users := make([]*store.User, num)
 
-	for i := 0; i < num; i++ {
+	for i := range num {
 		users[i] = &store.User{
 			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
 			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d", i) + "@example.com",
+			RoleID: 1,
 		}
 	}
 
@@ -61,7 +62,7 @@ func generateUsers(num int) []*store.User {
 
 func generatePosts(num int, users []*store.User) []*store.Post {
 	posts := make([]*store.Post, num)
-	for i := 0; i < num; i++ {
+	for i := range num {
 		userID := rand.Intn(len(users)) + 1
 
 		posts[i] = &store.Post{
@@ -80,7 +81,7 @@ func generatePosts(num int, users []*store.User) []*store.Post {
 
 func generateComments(num int, users []*store.User, posts []*store.Post) []*store.Comment {
 	cms := make([]*store.Comment, num)
-	for i := 0; i < num; i++ {
+	for i := range num {
 		userID := rand.Intn(len(users)) + 1
 		postID := rand.Intn(len(posts)) + 1
 		
