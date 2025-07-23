@@ -22,7 +22,7 @@ var (
 	ErrUserID       = errors.New("failed to retrieve userID from token")
 )
 
-const userCtx = contextKey("user")
+const userCtxKey = contextKey("user")
 
 func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -65,14 +65,14 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx = context.WithValue(ctx, userCtx, user)
+		ctx = context.WithValue(ctx, userCtxKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
 // Get post from context
 func getUserFromContext(ctx context.Context) *store.User {
-	user, ok := ctx.Value(userCtx).(*store.User)
+	user, ok := ctx.Value(userCtxKey).(*store.User)
 	if !ok {
 		return nil
 	}

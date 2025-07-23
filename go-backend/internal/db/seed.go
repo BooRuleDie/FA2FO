@@ -8,6 +8,8 @@ import (
 	"math/rand"
 )
 
+var defaultPassword = "Newpassword1234!"
+
 func Seed(store store.Storage, db *sql.DB) error {
 	ctx := context.Background()
 
@@ -48,13 +50,47 @@ func Seed(store store.Storage, db *sql.DB) error {
 
 func generateUsers(num int) []*store.User {
 	users := make([]*store.User, num)
-
-	for i := range num {
-		users[i] = &store.User{
+	
+	// insert admin user
+	adminUser := &store.User{
+		Username: "booruledie",
+		Email:    "admin@booruledie.com",
+		Role: store.Role{
+			ID: 3,
+			Name: "admin",
+			Level: 3,
+			Description: "An admin can update and delete other users roles",
+		},
+		IsActive: true,
+	}
+	adminUser.Password.Set(defaultPassword)
+	users[0] = adminUser
+	
+	// insert moderator user
+	moderatorUser := &store.User{
+		Username: "temperkan",
+		Email:    "admin@temperkan.com",
+		Role: store.Role{
+			ID: 2,
+			Name: "moderator",
+			Level: 2,
+			Description: "A moderator can update other users posts",
+		},
+		IsActive: true,
+	}
+	moderatorUser.Password.Set(defaultPassword)
+	users[1] = moderatorUser
+	
+	numAfterAdminModerator := num - 2
+	for i := range numAfterAdminModerator {
+		i = i + 2
+		user := &store.User{
 			Username: usernames[i%len(usernames)] + fmt.Sprintf("%d", i),
 			Email:    usernames[i%len(usernames)] + fmt.Sprintf("%d", i) + "@example.com",
-			RoleID: 1,
+			IsActive: true,
 		}
+		user.Password.Set(defaultPassword)
+		users[i] = user
 	}
 
 	return users
@@ -84,7 +120,7 @@ func generateComments(num int, users []*store.User, posts []*store.Post) []*stor
 	for i := range num {
 		userID := rand.Intn(len(users)) + 1
 		postID := rand.Intn(len(posts)) + 1
-		
+
 		cms[i] = &store.Comment{
 			PostID:  int64(postID),
 			UserID:  int64(userID),

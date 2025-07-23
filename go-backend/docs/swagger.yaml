@@ -77,6 +77,10 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
       token:
         type: string
       updated_at:
@@ -152,6 +156,17 @@ definitions:
       user_id:
         type: integer
     type: object
+  store.Role:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      level:
+        type: integer
+      name:
+        type: string
+    type: object
   store.User:
     properties:
       created_at:
@@ -160,6 +175,10 @@ definitions:
         type: string
       id:
         type: integer
+      is_active:
+        type: boolean
+      role:
+        $ref: '#/definitions/store.Role'
       updated_at:
         type: string
       username:

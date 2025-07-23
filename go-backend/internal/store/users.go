@@ -30,7 +30,8 @@ type User struct {
 	Password  password `json:"-"`
 	CreatedAt string   `json:"created_at"`
 	UpdatedAt string   `json:"updated_at"`
-	RoleID    int      `json:"role_id"`
+	Role      Role     `json:"role"`
+	IsActive  bool     `json:"is_active"`
 }
 
 type password struct {
@@ -83,12 +84,18 @@ func newUsersRepo(db *sql.DB) *pqUsers {
 
 func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 	query := `
-		INSERT INTO Users(username, password, email, role_id)
-		VALUES($1, $2, $3, $4) RETURNING id, created_at, updated_at
+		INSERT INTO Users(username, password, email, role_id, is_active)
+		VALUES($1, $2, $3, $4, $5) RETURNING id, created_at, updated_at
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
+
+	// default userID
+	userRoleID := 1
+	if user.Role.ID != 0 {
+		userRoleID = int(user.Role.ID)
+	}
 
 	err := us.db.QueryRowContext(
 		ctx,
@@ -98,7 +105,8 @@ func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 		// or let database handle the hashing
 		user.Password.hash,
 		user.Email,
-		1, // default role id which is 'user'
+		userRoleID, // default role id which is 'user'
+		user.IsActive,
 	).Scan(
 		&user.ID,
 		&user.CreatedAt,
@@ -120,14 +128,19 @@ func (us *pqUsers) Create(ctx context.Context, tx *sql.Tx, user *User) error {
 
 func (us *pqUsers) GetByID(ctx context.Context, userID int64) (*User, error) {
 	query := `
-		SELECT
-			u.id,
-			u.username,
-			u.email,
-			u.created_at,
-			u.updated_at
-		FROM users u
-		WHERE u.id = $1;
+	SELECT
+		u.id,
+		u.username,
+		u.email,
+		u.created_at,
+		u.updated_at,
+		r.id AS role_id,
+		r.name AS role_name,
+		r.description AS role_description,
+		r.level AS role_level
+	FROM users u
+	JOIN roles r ON r.id = u.role_id
+	WHERE u.id = $1;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
@@ -144,6 +157,10 @@ func (us *pqUsers) GetByID(ctx context.Context, userID int64) (*User, error) {
 		&user.Email,
 		&user.CreatedAt,
 		&user.UpdatedAt,
+		&user.Role.ID,
+		&user.Role.Name,
+		&user.Role.Description,
+		&user.Role.Level,
 	)
 	if err != nil {
 		switch {

@@ -16,17 +16,20 @@ type Storage struct {
 	Users    usersRepository
 	Posts    postsRepository
 	Comments commentsRepository
+	Roles    rolesRepository
 }
 
 func NewPostgreSQLStorage(db *sql.DB) Storage {
 	users := newUsersRepo(db)
 	posts := newPostsRepo(db)
 	comments := newCommentsRepo(db)
+	roles := newRolesRepo(db)
 
 	return Storage{
 		Users:    users,
 		Posts:    posts,
 		Comments: comments,
+		Roles:    roles,
 	}
 }
 

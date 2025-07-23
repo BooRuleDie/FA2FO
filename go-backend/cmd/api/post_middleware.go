@@ -14,6 +14,45 @@ type contextKey string
 
 const postContextKey = contextKey("post")
 
+var ErrUnauthorizedAccess = errors.New("Unauthorized Action")
+
+// authorization middleware
+func (app *application) checkPostOwnership(requiredRole string, next http.HandlerFunc) http.HandlerFunc {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user := getUserFromContext(r.Context())
+		post := postFromContext(r.Context())
+
+		// user can modify or delete his own post
+		if post.UserID == user.ID {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		// check role precedence
+		allowed, err := app.checkRolePrecedence(r.Context(), user, requiredRole)
+		if err != nil {
+			app.internalServerError(w, r, err)
+			return
+		}
+
+		if !allowed {
+			app.unauthorized(w, r, ErrUnauthorizedAccess)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (app *application) checkRolePrecedence(ctx context.Context, user *store.User, requiredRole string) (bool, error) {
+	role, err := app.store.Roles.GetByName(ctx, requiredRole)
+	if err != nil {
+		return false, err
+	}
+
+	return role.Level <= user.Role.Level, nil
+}
+
 // getPost middleware
 func (app *application) postCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

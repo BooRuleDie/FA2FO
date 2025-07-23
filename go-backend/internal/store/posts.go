@@ -122,19 +122,18 @@ func (ps *pqPosts) GetByID(ctx context.Context, postID int64) (*Post, error) {
 	return &post, nil
 }
 
-func (ps *pqPosts) Delete(ctx context.Context, post *Post) error {
+func (ps *pqPosts) deletePost(ctx context.Context, tx *sql.Tx, post *Post) error {
 	query := `
-		DELETE FROM posts p WHERE p.id = $1 AND p.user_id = $2;
+		DELETE FROM posts p WHERE p.id = $1;
 	`
 
 	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
 	defer cancel()
 
-	res, err := ps.db.ExecContext(
+	res, err := tx.ExecContext(
 		ctx,
 		query,
 		post.ID,
-		post.UserID,
 	)
 	if err != nil {
 		return err
@@ -149,6 +148,50 @@ func (ps *pqPosts) Delete(ctx context.Context, post *Post) error {
 	}
 
 	return nil
+}
+
+func (ps *pqPosts) deletePostComments(ctx context.Context, tx *sql.Tx, post *Post) error {
+	query := `
+		DELETE FROM comments c WHERE c.post_id = $1;
+	`
+
+	ctx, cancel := context.WithTimeout(ctx, QueryTimeoutDuration)
+	defer cancel()
+
+	res, err := tx.ExecContext(
+		ctx,
+		query,
+		post.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	ra, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if ra == 0 {
+		return ErrNotFound
+	}
+
+	return nil
+}
+
+func (ps *pqPosts) Delete(ctx context.Context, post *Post) error {
+	return withTx(ps.db, ctx, func(tx *sql.Tx) error {
+		// delete comments by post id
+		if err := ps.deletePostComments(ctx, tx, post); err != nil {
+			return err
+		}
+
+		// delete the post
+		if err := ps.deletePost(ctx, tx, post); err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 func (ps *pqPosts) Update(ctx context.Context, post *Post) error {
@@ -208,7 +251,7 @@ func (ps *pqPosts) Feed(ctx context.Context, userID int64, fp *FeedPagination) (
 		WHERE
 			f.follower_id = $1 AND
 			(
-				p.title ILIKE '%' || $2 || '%' OR 
+				p.title ILIKE '%' || $2 || '%' OR
 				p.content ILIKE '%' || $2 || '%'
 			) AND
 			(

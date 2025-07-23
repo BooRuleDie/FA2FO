@@ -104,9 +104,10 @@ func (app *application) mount() http.Handler {
 			r.Use(app.AuthTokenMiddleware)
 			r.Post("/", app.createPostHandler)
 			r.Route("/{postID}", func(r chi.Router) {
-				r.With(app.postCtx).Get("/", app.getPostHandler)
-				r.Patch("/", app.updatePostHandler)
-				r.Delete("/", app.deletePostHandler)
+				r.Use(app.postCtx)
+				r.Get("/", app.getPostHandler)
+				r.Patch("/", app.checkPostOwnership("moderator", app.updatePostHandler))
+				r.Delete("/", app.checkPostOwnership("admin", app.deletePostHandler))
 			})
 		})
 		r.Route("/users", func(r chi.Router) {
