@@ -6,6 +6,7 @@ import (
 	"go-backend/internal/env"
 	"go-backend/internal/mailer"
 	"go-backend/internal/store"
+	"go-backend/internal/store/cache"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -57,7 +58,7 @@ func main() {
 			jsonURL: env.MustGetString("SWAGGER_JSON_URL"),
 		},
 		mail: mailConfig{
-			exp: time.Hour * 24 * 3, // 3 days
+			exp:       time.Hour * 24 * 3, // 3 days
 			fromEmail: env.MustGetString("FROM_EMAIL"),
 			sengrid: sengridConfig{
 				apiKey: env.MustGetString("SENDGRID_API_KEY"),
@@ -67,12 +68,17 @@ func main() {
 		auth: authConfig{
 			basic: basicAuthConfig{
 				username: env.MustGetString("BASIC_AUTH_USERNAME"),
-				pass: env.MustGetString("BASIC_AUTH_PASS"),
+				pass:     env.MustGetString("BASIC_AUTH_PASS"),
 			},
 			token: tokenConfig{
 				secret: env.MustGetString("AUTH_JWT_SECRET"),
-				exp: time.Hour * 24 * time.Duration(env.MustGetInt("AUTH_JWT_EXPIRES_IN_DAYS")),
+				exp:    time.Hour * 24 * time.Duration(env.MustGetInt("AUTH_JWT_EXPIRES_IN_DAYS")),
 			},
+		},
+		redis: redisConfig{
+			Addr:     env.MustGetString("REDIS_ADDR"),
+			Password: env.MustGetString("REDIS_PASSWORD"),
+			DB:       env.MustGetInt("REDIS_DB"),
 		},
 	}
 	// logger
@@ -94,13 +100,17 @@ func main() {
 	}
 	defer db.Close()
 
+	// redis client
+	redis := cache.NewRedisClient(cfg.redis.Addr, cfg.redis.Password, cfg.redis.DB)
+	cacheStorage := cache.NewCacheStorage(redis)
+
 	store := store.NewPostgreSQLStorage(db)
-	
+
 	// mailer
 	mailer := mailer.NewSendgrid(cfg.mail.sengrid.apiKey, cfg.mail.fromEmail)
-	
+
 	// authenticator
-	
+
 	authenticator := auth.NewJWTAuthenticator(cfg.auth.token.secret, auth.AUD, auth.Hostname)
 
 	app := &application{
@@ -108,7 +118,8 @@ func main() {
 		store:  store,
 		logger: logger,
 		mailer: mailer,
-		auth: authenticator,
+		auth:   authenticator,
+		cache:  cacheStorage,
 	}
 
 	logger.Fatal(app.run())

@@ -5,6 +5,7 @@ import (
 	"go-backend/internal/auth"
 	"go-backend/internal/mailer"
 	"go-backend/internal/store"
+	"go-backend/internal/store/cache"
 	"net/http"
 	"time"
 
@@ -23,6 +24,7 @@ type application struct {
 	logger *zap.SugaredLogger
 	mailer mailer.Client
 	auth   auth.Authenticator
+	cache  cache.CacheStorage
 }
 
 type config struct {
@@ -33,6 +35,7 @@ type config struct {
 	mail        mailConfig
 	frontendURL string
 	auth        authConfig
+	redis       redisConfig
 }
 
 type authConfig struct {
@@ -70,6 +73,12 @@ type dbConfig struct {
 	maxOpenConns int
 	maxIdleConns int
 	maxIdleTime  string
+}
+
+type redisConfig struct {
+	Addr     string
+	Password string
+	DB       int
 }
 
 func (app *application) mount() http.Handler {

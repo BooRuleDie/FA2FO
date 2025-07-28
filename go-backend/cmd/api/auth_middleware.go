@@ -58,8 +58,7 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		}
 
 		ctx := r.Context()
-
-		user, err := app.store.Users.GetByID(ctx, userID)
+		user, err := app.getUser(ctx, userID)
 		if err != nil {
 			app.unauthorizedWithError(w, r, err)
 			return
@@ -68,6 +67,37 @@ func (app *application) AuthTokenMiddleware(next http.Handler) http.Handler {
 		ctx = context.WithValue(ctx, userCtxKey, user)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func (app *application) getUser(ctx context.Context, userID int64) (*store.User, error) {
+	// Try to get the user from the cache by their userID.
+	user, err := app.cache.Users.Get(ctx, userID)
+	if err != nil {
+		// Return error if the cache call fails completely.
+		return nil, err
+	}
+	if user != nil {
+		// If user is found in cache, return it immediately.
+		// app.logger.Info("getUser from cache!")
+		return user, nil
+	} else {
+		// app.logger.Info("getUser from db!")
+		// User not found in cache, fetch from persistent store.
+		user, err = app.store.Users.GetByID(ctx, userID)
+		if err != nil {
+			// Return error if user could not be retrieved from the database.
+			return nil, err
+		}
+		// Cache the retrieved user for future requests.
+		err = app.cache.Users.Set(ctx, user)
+		if err != nil {
+			// Return error if caching attempt fails.
+			return nil, err
+		}
+	}
+
+	// Return the retrieved user (either from cache or database).
+	return user, err
 }
 
 // Get post from context
