@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"time"
 )
 
 type status struct {
@@ -19,6 +20,8 @@ type status struct {
 //	@Failure		500	{string}	string
 //	@Router			/v1/health [get]
 func (app *application) healthCheckHandler(w http.ResponseWriter, r *http.Request) {
+	
+	time.Sleep(time.Second * 4)
 
 	s := status{
 		"ok",
