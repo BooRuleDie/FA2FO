@@ -45,19 +45,17 @@ services:
         volumes:
         - ./wiremock:/home/wiremock/mappings
 
-    app:
-        image: shortener-app:latest
-        container_name: shortener-app
-        env_file: .env
-        depends_on:
-            - postgres
-            - redis
-            - localstack
-            - wiremock
-        ports:
-            - "${APP_PORT}:${APP_PORT}"
-        volumes:
-            - .:/app
+    # app:
+    #     image: shortener-app:latest
+    #     container_name: shortener-app
+    #     env_file: .env
+    #     depends_on:
+    #         - postgres
+    #         - redis
+    #         - localstack
+    #         - wiremock
+    #     ports:
+    #         - "${APP_PORT}:${APP_PORT}"
 
 volumes:
     testcontainer_postgres:

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     POSTGRES_DB: str
     POSTGRES_PORT: int
     POSTGRES_HOST: str = "postgres"
+    DATABASE_URL: str 
 
     # Redis
     REDIS_HOST: str

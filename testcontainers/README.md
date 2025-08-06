@@ -10,3 +10,8 @@ alembic init alembic
 alembic revision --autogenerate -m "initial"
 alembic upgrade head
 ```
+
+# FastAPI Dev App
+```bash
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```

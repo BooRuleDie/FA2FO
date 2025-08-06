@@ -55,6 +55,7 @@ cover/
 # Environment
 .env*
 !.env
+!.envrc
 .venv
 env/
 venv/

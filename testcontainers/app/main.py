@@ -38,4 +38,4 @@ def health(db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Database error: {e}")
 
-    return {"status": "ok"}
+    return {"status": "ok 2"}
