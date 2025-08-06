@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from app.models import URL
+from app.models import URL, Click
+import uuid
 
 def create_url(
     db: Session,
@@ -15,5 +16,19 @@ def create_url(
     db.refresh(u)
     return u
 
+
 def get_url_by_code(db: Session, short_code: str) -> URL | None:
-    return db.query(URL).filter(URL.short_code == short_code).one_or_none()
+    try:
+        code_uuid = uuid.UUID(short_code)
+    except (ValueError, TypeError):
+        return None
+
+    return db.query(URL).filter(URL.short_code == code_uuid).one_or_none()
+
+
+def create_click(db: Session, url_id: int) -> Click:
+    click = Click(url_id=url_id)
+    db.add(click)
+    db.commit()
+    db.refresh(click)
+    return click
