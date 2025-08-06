@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -12,7 +12,6 @@ router = APIRouter(tags=["stats"])
 
 # S3 bucket name
 BUCKET = "shortener-stats"
-
 
 @router.post("/stat/generate", status_code=201)
 def generate_stats(db: Session = Depends(get_db), s3=Depends(get_s3)):
@@ -27,7 +26,9 @@ def generate_stats(db: Session = Depends(get_db), s3=Depends(get_s3)):
 
     # record in Postgres
     create_stat_dump(db, key=dump_key)
-    return
+
+    # return empty body
+    return Response(status_code=status.HTTP_201_CREATED)
 
 
 @router.get("/stat/list")
