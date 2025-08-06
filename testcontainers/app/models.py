@@ -49,8 +49,8 @@ class Click(Base):
 class StatDump(Base):
     __tablename__ = "stat_dumps"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    s3_key = Column(String, unique=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column( String, unique=True, nullable=False, index=True)
     created_at = Column(
         DateTime(timezone=True),
         default=lambda: datetime.now(timezone.utc),

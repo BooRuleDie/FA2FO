@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from app.models import URL, Click
+from app.models import URL, Click, StatDump
 import uuid
 
 def create_url(
@@ -32,3 +32,19 @@ def create_click(db: Session, url_id: int) -> Click:
     db.commit()
     db.refresh(click)
     return click
+
+
+def create_stat_dump(db: Session, key: str) -> StatDump:
+    dump = StatDump(key=key)
+    db.add(dump)
+    db.commit()
+    db.refresh(dump)
+    return dump
+
+
+def get_stat_dump_by_id(db: Session, dump_id: int) -> StatDump | None:
+    return db.query(StatDump).filter(StatDump.id == dump_id).one_or_none()
+
+
+def list_stat_dumps(db: Session) -> list[StatDump]:
+    return db.query(StatDump).all()

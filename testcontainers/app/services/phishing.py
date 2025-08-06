@@ -1,11 +1,11 @@
+from redis import Redis
 import requests
 
 from app.config import settings
-from app.dependencies import get_redis
 
-def is_phishing_url(url: str) -> bool:
+
+def is_phishing_url(redis: Redis, url: str) -> bool:
     key = f"is_phishing:{url}"
-    redis = get_redis()
 
     # Try to get from cache
     cached = redis.get(key)
@@ -16,7 +16,7 @@ def is_phishing_url(url: str) -> bool:
 
     # Cache miss, fetch from 3rd party service
     print(f"3rd party API for URL: {url}.")
-    
+
     resp = requests.get(
         f"{settings.PHISHING_API_URL}", params={"url": url}, timeout=2
     )

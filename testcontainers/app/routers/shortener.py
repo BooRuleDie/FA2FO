@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session
+from redis import Redis
 
 from app.schemas import CreateShortURLRequest
-from app.dependencies import get_db
+from app.dependencies import get_db, get_redis
 from app.crud import create_url, get_url_by_code, create_click
 from app.services.phishing import is_phishing_url
 
@@ -18,13 +19,10 @@ router = APIRouter(tags=["shortener"])
 def create_short(
     payload: CreateShortURLRequest,
     db: Session = Depends(get_db),
+    redis: Redis = Depends(get_redis),
 ):
-    phishing_flag = is_phishing_url(payload.url)
-    if phishing_flag:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN, detail="Phishing URL detected."
-        )
-
+    phishing_flag = is_phishing_url(redis, payload.url)
+    
     url_obj = create_url(db, payload.url, phishing_flag)
 
     response = {
@@ -48,7 +46,5 @@ def redirect_short(
 
     # record click and redirect
     create_click(db, typing.cast(int, url.id))
-    
-    print(str(url.original_url))
 
     return Response(status_code=302, headers={"Location": str(url.original_url)})
