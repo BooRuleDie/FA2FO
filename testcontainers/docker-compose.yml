@@ -1,0 +1,64 @@
+services:
+    postgres:
+        image: postgres:17.4
+        container_name: shortener-postgres
+        restart: always
+        env_file: .env
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB}
+        ports:
+            - "${POSTGRES_PORT}:5432"
+        volumes:
+            - testcontainer_postgres:/var/lib/postgresql/data
+
+    redis:
+        image: redis:alpine
+        container_name: shortener-redis
+        restart: always
+        ports:
+            - "${REDIS_PORT}:6379"
+
+    localstack:
+        image: localstack/localstack:2.2
+        container_name: shortener-localstack
+        environment:
+            - SERVICES=s3
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_REGION=${AWS_REGION}
+        ports:
+            - "4566:4566" # edge port for all services
+            - "4572:4572" # legacy S3
+        volumes:
+            - testcontainer_localstack:/tmp/localstack
+
+    wiremock:
+        image: wiremock/wiremock:2.35.0
+        container_name: shortener-wiremock
+        ports:
+            - "8080:8080"      
+        command:
+        - "--verbose"
+        - "--global-response-templating"
+        volumes:
+        - ./wiremock:/home/wiremock/mappings
+
+    app:
+        image: shortener-app:latest
+        container_name: shortener-app
+        env_file: .env
+        depends_on:
+            - postgres
+            - redis
+            - localstack
+            - wiremock
+        ports:
+            - "${APP_PORT}:${APP_PORT}"
+        volumes:
+            - .:/app
+
+volumes:
+    testcontainer_postgres:
+    testcontainer_localstack:

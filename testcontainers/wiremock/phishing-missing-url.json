@@ -1,0 +1,19 @@
+{
+    "priority": 1,
+    "request": {
+        "method": "GET",
+        "urlPath": "/phishing",
+        "queryParameters": {
+            "url": {
+                "absent": true
+            }
+        }
+    },
+    "response": {
+        "status": 400,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": "{\"error\": \"url parameter is required\"}"
+    }
+}

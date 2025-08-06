@@ -1,0 +1,20 @@
+{
+    "priority": 2,
+    "request": {
+        "method": "GET",
+        "urlPath": "/phishing",
+        "queryParameters": {
+            "url": {
+                "matches": ".*"
+            }
+        }
+    },
+    "response": {
+        "status": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": "{{#if (lte (randomValue min=1 max=100) \"40\")}}{\"is_phishing\": true}{{else}}{\"is_phishing\": false}{{/if}}",
+        "transformers": ["response-template"]
+    }
+}
