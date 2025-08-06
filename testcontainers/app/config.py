@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     POSTGRES_PORT: int
-    POSTGRES_HOST: str = "postgres"
+    POSTGRES_HOST: str
     DATABASE_URL: str 
 
     # Redis
@@ -17,7 +17,7 @@ class Settings(BaseSettings):
     # S3 / LocalStack
     AWS_ACCESS_KEY_ID: str
     AWS_SECRET_ACCESS_KEY: str
-    AWS_REGION: str = "us-east-1"
+    AWS_REGION: str
     S3_ENDPOINT_URL: AnyUrl
 
     # WireMock phishing API
