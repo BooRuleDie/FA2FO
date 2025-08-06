@@ -3,6 +3,7 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
+from app.routers.shortener import router as shortener_router
 from app.dependencies import get_db, engine
 from app.models import Base
 
@@ -25,6 +26,9 @@ app = FastAPI(
     title="URL Shortener Demo (sync)",
     lifespan=lifespan
 )
+
+# Include routers
+app.include_router(shortener_router)
 
 @app.get("/health")
 def health(db: Session = Depends(get_db)):
