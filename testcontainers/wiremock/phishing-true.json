@@ -1,11 +1,11 @@
 {
-    "priority": 4,
+    "priority": 2,
     "request": {
         "method": "GET",
         "urlPath": "/phishing",
         "queryParameters": {
             "url": {
-                "matches": ".*"
+                "equalTo": "https://bad.com"
             }
         }
     },
@@ -14,7 +14,6 @@
         "headers": {
             "Content-Type": "application/json"
         },
-        "body": "{{#if (lte (randomValue min=1 max=100) \"50\")}}{\"is_phishing\": true}{{else}}{\"is_phishing\": false}{{/if}}",
-        "transformers": ["response-template"]
+        "body": "{\"is_phishing\": true}"
     }
 }

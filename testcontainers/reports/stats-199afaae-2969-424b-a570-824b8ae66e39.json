@@ -1,0 +1,38 @@
+[
+    {
+        "short_code": "79afbe02-2c83-4ca1-b80e-e20dcf0ee446",
+        "original_url": "https://bbc.com",
+        "is_phishing": false,
+        "total_clicks": 0
+    },
+    {
+        "short_code": "12de72c7-03af-45a7-a80d-c065c905551c",
+        "original_url": "https://abc.com",
+        "is_phishing": false,
+        "total_clicks": 5
+    },
+    {
+        "short_code": "b14b74de-ec91-4097-927d-3414ca827174",
+        "original_url": "https://trendyol.com",
+        "is_phishing": false,
+        "total_clicks": 3
+    },
+    {
+        "short_code": "5b1bc466-65d7-4134-918f-60fe86624580",
+        "original_url": "https://milliyet.com.tr",
+        "is_phishing": true,
+        "total_clicks": 0
+    },
+    {
+        "short_code": "e877ecf4-1b97-4351-8498-6b6d5a056c1f",
+        "original_url": "https://hurriyet.com.tr",
+        "is_phishing": false,
+        "total_clicks": 0
+    },
+    {
+        "short_code": "8c66dcf3-cd8e-42d6-859b-6a6029e4da39",
+        "original_url": "https://example.com",
+        "is_phishing": false,
+        "total_clicks": 2
+    }
+]

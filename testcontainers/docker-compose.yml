@@ -19,6 +19,8 @@ services:
         restart: always
         ports:
             - "${REDIS_PORT}:6379"
+        volumes:
+            - testcontainer_redis:/data
 
     localstack:
         image: localstack/localstack:2.2
@@ -40,10 +42,10 @@ services:
         ports:
             - "8080:8080"      
         command:
-        - "--verbose"
-        - "--global-response-templating"
+            - "--verbose"
+            - "--global-response-templating"
         volumes:
-        - ./wiremock:/home/wiremock/mappings
+            - ./wiremock:/home/wiremock/mappings
 
     # app:
     #     image: shortener-app:latest
@@ -60,3 +62,4 @@ services:
 volumes:
     testcontainer_postgres:
     testcontainer_localstack:
+    testcontainer_redis:

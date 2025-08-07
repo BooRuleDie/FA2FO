@@ -1,11 +1,9 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from sqlalchemy import text
+from fastapi import FastAPI
 
 from app.routers.shortener import router as shortener_router
 from app.routers.stats import router as stats_router
-from app.dependencies import get_db, engine
+from app.dependencies import engine
 from app.models import Base
 
 
@@ -19,7 +17,9 @@ async def lifespan(_: FastAPI):
     # The `Base` object imported from your models now knows about URL, Click, etc.
     # We bind it to the single engine imported from your dependencies.
     Base.metadata.create_all(bind=engine)
+    
     yield
+    
     print("Shutting down...")
 
 
@@ -33,16 +33,6 @@ app.include_router(shortener_router)
 app.include_router(stats_router)
 
 
-@app.get("/health")
-def health(db: Session = Depends(get_db)):
-    """
-    Basic health check, now cleaner and using the shared `get_db` dependency.
-    """
-    try:
-        # In SQLAlchemy 2.0+, it's recommended to wrap raw SQL in text()
-        db.execute(text("SELECT 1"))
-        print("I'm coming here no problem!")
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Database error: {e}")
-
-    return {"status": "ok 2"}
+@app.get("/health/status")
+def health():
+    return {"status": "ok"}
