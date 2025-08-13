@@ -2,27 +2,31 @@
 name: Integration Tests
 
 on:
-  push:
-    paths:
-      - 'testcontainers/**'
-  pull_request:
-    paths:
-      - 'testcontainers/**'
+    push:
+        paths:
+            - "testcontainers/**"
+    pull_request:
+        paths:
+            - "testcontainers/**"
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: pip install -r testcontainers/requirements.txt
-    
-    - name: Run integration tests
-      run: pytest -v
+    test:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v4
+              with:
+                  python-version: "3.11"
+
+            - name: Install dependencies
+              run: |
+                  cd testcontainers
+                  pip install -r requirements.txt
+
+            - name: Run integration tests
+              run: |
+                  cd testcontainers
+                  pytest -v
