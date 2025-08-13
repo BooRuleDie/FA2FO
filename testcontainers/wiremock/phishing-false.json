@@ -5,7 +5,7 @@
         "urlPath": "/phishing",
         "queryParameters": {
             "url": {
-                "matches": "https?://(good|safe|trusted|legitimate)\\..+"
+                "matches": "https?://(good|safe|trusted|legitimate).+"
             }
         }
     },
