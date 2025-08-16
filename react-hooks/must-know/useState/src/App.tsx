@@ -30,7 +30,6 @@ function App() {
                 </button>
             </div>
         </>
-        
     );
 }
 
