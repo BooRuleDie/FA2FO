@@ -1,0 +1,40 @@
+# dependencies
+node_modules/
+
+# production
+build/
+dist/
+out/
+
+# misc
+.DS_Store
+.env*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Tailwind CSS generated files
+*.css
+!src/**/*.css
+
+# TypeScript compiled JS files
+*.tsbuildinfo
+
+# local env files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# vscode settings
+.vscode/
+
+# React specific
+*.log
+*.cache/
+coverage/
+.env.test
+
+# next.js build files (if using Next.js)
+.next/
