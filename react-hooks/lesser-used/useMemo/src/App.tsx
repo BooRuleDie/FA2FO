@@ -1,15 +1,16 @@
 import { useState, useMemo, useEffect } from "react";
+
 export default function App() {
     const [number, setNumber] = useState(1);
     const [dark, setDark] = useState(false);
 
-    // useMemo returns a cached value unless 'number' changes
+    // useMemo caches the result of slowFunction unless 'number' changes
     const doubleNumber = useMemo(() => {
         return slowFunction(number);
     }, [number]);
 
-    // It's important to memoize themeStyles so it has the same reference unless 'dark' changes,
-    // otherwise its reference would change on every render causing potential problems if used as a dependency.
+    // Memoize themeStyles so its reference only changes when 'dark' changes.
+    // This prevents unnecessary effect invocations if used as a dependency.
     const themeStyles = useMemo(
         () => ({
             backgroundColor: dark ? "black" : "white",
@@ -18,9 +19,8 @@ export default function App() {
         [dark],
     );
 
-    // prooves that now thanks to the memoized object
-    // this useEffect won't get triggered on re-render caused
-    // by doubleNumber chanage but only the themeStyles
+    // Thanks to the memoized themeStyles object,
+    // this useEffect runs only when themeStyles changes (i.e. when 'dark' toggles).
     useEffect(() => {
         console.log("themeStyles changed");
     }, [themeStyles]);
@@ -44,7 +44,6 @@ export default function App() {
                 <div
                     style={themeStyles}
                     className="w-16 border-gray-300 text-2xl font-mono text-center flex items-center justify-center rounded py-4 px-8 border"
-                    
                 >
                     {doubleNumber}
                 </div>
@@ -53,6 +52,7 @@ export default function App() {
     );
 }
 
+// Simulates an expensive calculation.
 function slowFunction(num: number) {
     console.log("Calling Slow Function");
     for (let i = 0; i <= 1000000000; i++) continue;
