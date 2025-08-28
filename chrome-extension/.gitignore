@@ -1,0 +1,25 @@
+# Chrome Extension specific ignores
+/node_modules/
+/dist/
+/build/
+/coverage/
+.DS_Store
+*.pem
+*.log
+*.zip
+*.env
+*.local
+*.env.local
+.crx
+.sublime-workspace
+/test/
+.idea/
+.vscode/
+.npmrc
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/*.code-workspace
+
+# Ignore Chrome Extension auto-generated files
+chrome-extension-*
