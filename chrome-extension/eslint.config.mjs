@@ -1,14 +1,14 @@
 // @ts-check
 
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
+import eslint from "@eslint/js"
+import tseslint from "typescript-eslint"
 
 const config = tseslint.config(
   eslint.configs.recommended,
   ...tseslint.configs.strictTypeChecked,
   ...tseslint.configs.stylisticTypeChecked,
   {
-    ignores: ["dist/**/*", "eslint.config.mjs"],
+    ignores: ["dist/**/*"],
   },
   {
     languageOptions: {
@@ -18,6 +18,7 @@ const config = tseslint.config(
       },
     },
   },
-);
+)
 
-export default config;
+// noinspection JSUnusedGlobalSymbols
+export default config

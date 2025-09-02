@@ -1,12 +1,13 @@
-import path from "path";
-import webpack from "webpack";
-import CopyWebpackPlugin from "copy-webpack-plugin";
+import path from "path"
+import webpack from "webpack"
+import CopyWebpackPlugin from "copy-webpack-plugin"
 
 const config: webpack.Configuration = {
   entry: {
     background: "./src/background.ts",
     content: "./src/content.ts",
     popup: "./src/popup.ts",
+    options: "./src/options.ts",
   },
   resolve: {
     extensions: [".ts"],
@@ -17,6 +18,21 @@ const config: webpack.Configuration = {
         test: /\.ts$/,
         loader: "ts-loader",
         exclude: /node_modules/,
+      },
+      {
+        test: /\.css$/,
+        use: [
+          "style-loader",
+          "css-loader",
+          {
+            loader: "postcss-loader",
+            options: {
+              postcssOptions: {
+                plugins: ["postcss-import", "tailwindcss"],
+              },
+            },
+          },
+        ],
       },
     ],
   },
@@ -30,6 +46,6 @@ const config: webpack.Configuration = {
       patterns: [{ from: "static" }],
     }),
   ],
-};
+}
 
-export default config;
+export default config
